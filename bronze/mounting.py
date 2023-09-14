@@ -18,8 +18,4 @@ dbutils.fs.mount(
 
 # COMMAND ----------
 
-dbutils.fs.ls('/mnt/wetelcodump/bronze/')
 
-# COMMAND ----------
-
-mount_location='/mnt/wetelcodump/bronze/'

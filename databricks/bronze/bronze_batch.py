@@ -1,5 +1,10 @@
 # Databricks notebook source
-mount_point="dbfs:/mnt/wetelcodump/bronze"
+mount_point="dbfs:/mnt/wetelcodump/raw"
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##Reading data from mount point
 
 # COMMAND ----------
 
@@ -11,13 +16,16 @@ plans_df=spark.read.format("csv").option("header", "true").option("inferSchema",
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ##Display data
+
+# COMMAND ----------
+
 display(billing_df)
 display(customer_information_df)
 display(customer_rating_df)
 display(device_information_df)
 display(plans_df)
-
-
 
 # COMMAND ----------
 

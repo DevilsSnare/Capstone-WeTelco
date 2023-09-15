@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-09-15T06:48:42.498Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.76" etag="xyCl0RBXe6nz1kWnPqo8" version="21.7.5" type="device">
+<mxfile host="app.diagrams.net" modified="2023-09-15T08:48:14.000Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.76" etag="2D60E73YPSu2pDDL8ovR" version="21.7.5" type="device">
   <diagram id="DGaD0VAC34pHWQrbo-bv" name="Page-1">
     <mxGraphModel dx="2438" dy="1960" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -151,8 +151,8 @@
         <mxCell id="YQSdu3m_dBlDb1DBKMtC-9" value="Delta Live Table" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
           <mxGeometry x="180" y="416" width="120" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="YQSdu3m_dBlDb1DBKMtC-11" value="Workflow Notebook" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
-          <mxGeometry x="365" y="425" width="120" height="30" as="geometry" />
+        <mxCell id="YQSdu3m_dBlDb1DBKMtC-11" value="Delta Live Table" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="365" y="416" width="120" height="30" as="geometry" />
         </mxCell>
         <mxCell id="YQSdu3m_dBlDb1DBKMtC-12" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=none;" vertex="1" parent="1">
           <mxGeometry x="710" y="478" width="170" height="120" as="geometry" />

@@ -19,7 +19,6 @@ import dlt
 )
 def billing_raw():
     billing = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Billing')
-    billing = billing.withColumnRenamed('Customer_Id', 'customer_id')
     return billing
 
 # COMMAND ----------
@@ -33,12 +32,6 @@ def billing_raw():
 )
 def customer_information_raw():
     customer_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_information')
-    customer_information = customer_information.withColumnRenamed('Customer_Id', 'customer_id')
-    customer_information = customer_information.withColumnRenamed('Full_Name', 'full_name')
-    customer_information = customer_information.withColumnRenamed('Customer_Email', 'customer_email')
-    customer_information = customer_information.withColumnRenamed('Customer_Phone', 'customer_phone')
-    customer_information = customer_information.withColumnRenamed('Connection_type', 'connection_type')
-    customer_information = customer_information.withColumnRenamed("system status", "system_status")
     return customer_information
 
 # COMMAND ----------
@@ -65,7 +58,6 @@ def customer_rating_raw():
 )
 def device_information_raw():
     device_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Device_Information')
-    device_information = device_information.withColumnRenamed('Customer_id', 'customer_id')
     return device_information
 
 # COMMAND ----------
@@ -79,12 +71,6 @@ def device_information_raw():
 )
 def plans_raw():
     plans = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Plans')
-    plans = plans.withColumnRenamed("Voice Service", "voice_service") \
-                 .withColumnRenamed("Mobile Data", "mobile_data") \
-                 .withColumnRenamed("Spam Detection", "spam_detection") \
-                 .withColumnRenamed("Fraud Prevention","fraud_prevention") \
-                 .withColumnRenamed('OTT', 'ott') \
-                 .withColumnRenamed('Emergency', 'emergency')
     return plans
 
 # COMMAND ----------

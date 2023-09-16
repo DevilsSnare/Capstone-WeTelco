@@ -1,31 +1,79 @@
 # Databricks notebook source
-mount_point="dbfs:/mnt/wetelcodump/raw"
-
-# COMMAND ----------
-
 # MAGIC %md
-# MAGIC ##Reading data from mount point
+# MAGIC ##### creating delta live tables
 
 # COMMAND ----------
 
-billing_df=spark.read.format("csv").option("header", "true").option("inferSchema","true").load(f"{mount_point}/Billing.csv")
-customer_information_df=spark.read.format("csv").option("header", "true").option("inferSchema","true").load(f"{mount_point}/Customer_information.csv")
-customer_rating_df=spark.read.format("csv").option("header", "true").option("inferSchema","true").load(f"{mount_point}/Customer_rating.csv")
-device_information_df=spark.read.format("csv").option("header", "true").option("inferSchema","true").load(f"{mount_point}/Device_Information.csv")
-plans_df=spark.read.format("csv").option("header", "true").option("inferSchema","true").load(f"{mount_point}/Plans.csv")
+from pyspark.sql.functions import *
+from pyspark.sql.types import *
+import dlt
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC ##Display data
+@dlt.create_table(
+  comment="The raw billing batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def billing_raw():
+    billing = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Billing')
+    return billing
 
 # COMMAND ----------
 
-display(billing_df)
-display(customer_information_df)
-display(customer_rating_df)
-display(device_information_df)
-display(plans_df)
+@dlt.create_table(
+  comment="The raw customer_information batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def customer_information_raw():
+    customer_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_information')
+    customer_information = customer_information.withColumnRenamed("system status", "system_status")
+    return customer_information
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The raw customer_rating batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def customer_rating_raw():
+    customer_rating = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_rating')
+    return customer_rating
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The raw device_information, batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def device_information_raw():
+    device_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Device_Information')
+    return device_information
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The raw plans, batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def plans_raw():
+    plans = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Plans')
+    plans = plans.withColumnRenamed("Voice Service", "voice_service").withColumnRenamed("Mobile Data", "mobile_data").withColumnRenamed("Spam Detection", "spam_detection").withColumnRenamed("Fraud Prevention","fraud_prevention")
+    return plans
 
 # COMMAND ----------
 

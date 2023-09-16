@@ -32,6 +32,7 @@ def billing_raw():
 )
 def customer_information_raw():
     customer_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_information')
+    customer_information.withColumnRenamed("system status", "system_status")
     return customer_information
 
 # COMMAND ----------
@@ -71,6 +72,7 @@ def device_information_raw():
 )
 def plans_raw():
     plans = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Plans')
+    plans = plans.withColumnRenamed("Voice Service", "voice_service").withColumnRenamed("Mobile Data", "mobile_data").withColumnRenamed("Spam Detection", "spam_detection").withColumnRenamed("Fraud Prevention","fraud_prevention")
     return plans
 
 # COMMAND ----------

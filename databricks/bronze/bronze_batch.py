@@ -112,4 +112,22 @@ def customer_information_raw():
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ####Customer_rating DLT
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The raw customer_rating, batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def customer_rating_raw():
+    customer_rating = spark.read.format("delta").load(f'{mount_point}/bronze/Customer_rating')
+    return customer_rating
+
+# COMMAND ----------
+
 

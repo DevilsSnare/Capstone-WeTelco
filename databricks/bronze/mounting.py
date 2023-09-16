@@ -19,8 +19,12 @@ dbutils.fs.mount(
 
 # COMMAND ----------
 
+<<<<<<< Updated upstream
 # MAGIC %fs ls /mnt/wetelcodump/raw/
 
 # COMMAND ----------
 
 
+=======
+# MAGIC %fs ls /mnt/wetelcodump/
+>>>>>>> Stashed changes

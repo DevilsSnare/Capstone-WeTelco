@@ -1,4 +1,9 @@
 # Databricks notebook source
+# MAGIC %md
+# MAGIC ##### downloading and unzipping batch dump to ADLS
+
+# COMMAND ----------
+
 # MAGIC %sh
 # MAGIC wget https://mentorskool-platform-uploads.s3.ap-south-1.amazonaws.com/documents/ebcca86b-6b55-48c9-8e05-4340d2dafd50_83d04ac6-cb74-4a96-a06a-e0d5442aa126_TelecomZip.zip
 
@@ -45,6 +50,30 @@ def writeAsDelta(folder_path):
             save_path = '/mnt/wetelcodump/bronze/'
             df.write.format('delta').option("delta.columnMapping.mode", "name").mode("overwrite").save(save_path+filename)
 writeAsDelta(base_path)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##### creating dlt
+
+# COMMAND ----------
+
+from pyspark.sql.functions import *
+from pyspark.sql.types import *
+import dlt
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The raw billing, batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def billing_raw():
+    billing = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Billing')
+    return billing
 
 # COMMAND ----------
 

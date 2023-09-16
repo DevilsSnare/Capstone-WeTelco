@@ -74,4 +74,26 @@ def billing_clean():
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ####Plans Data
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The cleaned plans data, ingested from delta",
+  table_properties={
+    "wetelco_deltaliv.quality": "silver",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def plans_clean():
+    plans_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/plans_raw")
+
+    #convert all columns into lower case
+    plans_df = plans_df.select([col(column).alias(column.lower()) for column in plans_df.columns])
+    
+    return plans_df
+
+# COMMAND ----------
+
 

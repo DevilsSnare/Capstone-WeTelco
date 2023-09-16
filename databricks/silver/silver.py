@@ -96,4 +96,26 @@ def plans_clean():
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ####Customer Rating Data
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The cleaned customer_rating, ingested from delta",
+  table_properties={
+    "wetelco_deltaliv.quality": "silver",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def customer_rating_clean():
+    customer_rating_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/customer_rating_raw")
+
+    #convert all columns into lower case
+    customer_rating_df = customer_rating_df.select([col(column).alias(column.lower()) for column in customer_rating_df.columns])
+    
+    return customer_rating_df
+
+# COMMAND ----------
+
 

@@ -1,16 +1,15 @@
 # Databricks notebook source
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+from pyspark.sql.window import Window
 import dlt
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ####customer_information data
+# MAGIC ##### customer_information cleaning
 
 # COMMAND ----------
-
-from pyspark.sql.functions import col
 
 @dlt.create_table(
   comment="The cleaned customer_information, ingested from delta",
@@ -20,8 +19,8 @@ from pyspark.sql.functions import col
   }
 )
 def customer_information_clean():
-    customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/customer_information_raw")
-
+    customer_information_df = dlt.read('customer_information_raw')
+    # customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/customer_information_raw")
     # Convert all columns into lower case
     customer_information_df = customer_information_df.select([col(column).alias(column.lower()) for column in customer_information_df.columns])
 
@@ -37,16 +36,13 @@ def customer_information_clean():
     
     return customer_information_df
 
-
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ####Billing Data
+# MAGIC ##### billing cleaning
 
 # COMMAND ----------
 
-from pyspark.sql.window import Window
-from pyspark.sql.functions import col, when, mean
 
 # Define a UDF to calculate the mean of bill_amount for each customer_id
 def calculate_mean_udf(bill_amount_col, customer_id_col):
@@ -61,7 +57,8 @@ def calculate_mean_udf(bill_amount_col, customer_id_col):
   }
 )
 def billing_clean():
-    billing_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/billing_raw")
+    billing_df = dlt.read('billing_raw')
+    # billing_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/billing_raw")
     billing_df = billing_df.select([col(column).alias(column.lower()) for column in billing_df.columns])
     
     # Replace '?' with null and cast bill_amount to a numeric type (e.g., double)
@@ -85,7 +82,7 @@ def billing_clean():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ####Plans Data
+# MAGIC ##### plans cleaning
 
 # COMMAND ----------
 
@@ -97,7 +94,8 @@ def billing_clean():
   }
 )
 def plans_clean():
-    plans_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/plans_raw")
+    plans_df = dlt.read('plans_raw')
+    # plans_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/plans_raw")
 
     # Convert all columns into lower case
     plans_df = plans_df.select([col(column).alias(column.lower()) for column in plans_df.columns])
@@ -107,11 +105,10 @@ def plans_clean():
     
     return plans_df
 
-
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ####Customer Rating Data
+# MAGIC ##### customer_rating cleaning
 
 # COMMAND ----------
 
@@ -123,7 +120,8 @@ def plans_clean():
   }
 )
 def customer_rating_clean():
-    customer_rating_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/customer_rating_raw")
+    customer_rating_df = dlt.read('customer_rating_raw')
+    # customer_rating_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/customer_rating_raw")
 
     # Convert all columns into lower case
     customer_rating_df = customer_rating_df.select([col(column).alias(column.lower()) for column in customer_rating_df.columns])
@@ -133,58 +131,42 @@ def customer_rating_clean():
     
     return customer_rating_df
 
-
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ####Device information Data
+# MAGIC ##### device_information cleaning
 
 # COMMAND ----------
 
-from pyspark.sql.functions import col
-from pyspark.sql.window import Window
-
 @dlt.create_table(
-  comment="The cleaned device_information, ingested from delta",
+  comment="The cleaned device information ingested from delta and partitioned by brand name",
+  partition_cols=["brand_name"],
   table_properties={
-    "wetelco_deltaliv.quality": "silver",
+    "wetelco.quality": "silver",
     "pipelines.autoOptimize.managed": "true"
   }
 )
+@dlt.expect_or_drop("valid customer_id", "customer_id IS NOT NULL")
 def device_information_clean():
-    device_information_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/device_information_raw")
-
-    # Convert all columns into lower case
+    device_information_df = dlt.read('device_information_raw')
+    # device_information_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/device_information_raw")
     device_information_df = device_information_df.select([col(column).alias(column.lower()) for column in device_information_df.columns])
     
-    # Step 1: Filter out rows where brand_name or model_name is null
-    device_information_df = device_information_df.filter(col("brand_name").isNotNull() & col("model_name").isNotNull())
-    
-    # Step 2: Replace null values in os_name with a non-null os_name for the same model_name if available, otherwise remove the row
-    window_spec = Window.partitionBy("model_name")
-    device_information_df = device_information_df.withColumn(
-        "os_name",
-        when(col("os_name").isNotNull(), col("os_name")).otherwise(
-            first(col("os_name"), ignorenulls=True).over(window_spec)
-        )
-    )
-    device_information_df = device_information_df.filter(col("os_name").isNotNull())
-    
-    # Step 3: Replace null values in os_vendor with a non-null os_vendor for the same os_name if available, otherwise remove the row
-    window_spec = Window.partitionBy("os_name")
-    device_information_df = device_information_df.withColumn(
-        "os_vendor",
-        when(col("os_vendor").isNotNull(), col("os_vendor")).otherwise(
-            first(col("os_vendor"), ignorenulls=True).over(window_spec)
-        )
-    )
-    device_information_df = device_information_df.filter(col("os_vendor").isNotNull())
-    
-    # Remove duplicates
+    #dropping duplicates
     device_information_df = device_information_df.dropDuplicates()
+
+    #dropping records that have columns 3rd onwards all values as null
+    device_information_df = device_information_df.dropna(thresh=3)
+
+    #replacing null with appropriate os name for the vendor Nokia
+    condition_1 = (col("os_vendor") == "NOKIA") & (col("os_name").isNull())
+    device_information_df = device_information_df.withColumn("os_name", when(condition_1, 'Series 30+').otherwise(col("os_name")))
+
+    #replacing null with appropriate os name for the vendor Mentor Graphics
+    condition_2 = (col("os_vendor") == "Mentor Graphics") & (col("os_name").isNull())
+    device_information_df = device_information_df.withColumn("os_name", when(condition_2, 'Android').otherwise(col("os_name")))
     
     return device_information_df
-
 
 # COMMAND ----------
 

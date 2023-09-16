@@ -66,7 +66,7 @@ display(dbutils.fs.ls(f"{mount_point}/bronze"))
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ##### creating dlt
+# MAGIC ### Creating DLT
 
 # COMMAND ----------
 
@@ -95,7 +95,7 @@ def billing_raw():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ####customer_information DLT
+# MAGIC ####Customer_Information DLT
 
 # COMMAND ----------
 
@@ -113,7 +113,7 @@ def customer_information_raw():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ####Customer_rating DLT
+# MAGIC ####Customer_Rating DLT
 
 # COMMAND ----------
 
@@ -127,6 +127,24 @@ def customer_information_raw():
 def customer_rating_raw():
     customer_rating = spark.read.format("delta").load(f'{mount_point}/bronze/Customer_rating')
     return customer_rating
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ####Device_Information DLT
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The raw device_information, batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def device_information_raw():
+    device_information = spark.read.format("delta").load(f'{mount_point}/bronze/Device_Information')
+    return device_information
 
 # COMMAND ----------
 

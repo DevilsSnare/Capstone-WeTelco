@@ -148,4 +148,22 @@ def device_information_raw():
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ####Plans DLT
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The raw plans, batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def plans_raw():
+    plans = spark.read.format("delta").load(f'{mount_point}/bronze/Plans')
+    return plans
+
+# COMMAND ----------
+
 

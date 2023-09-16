@@ -1,21 +1,11 @@
 # Databricks notebook source
-<<<<<<< Updated upstream
-mount_point="dbfs:/mnt/wetelcodump/raw"
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ##Reading data from mount point
-# MAGIC =======
 # MAGIC %sh
 # MAGIC wget https://mentorskool-platform-uploads.s3.ap-south-1.amazonaws.com/documents/ebcca86b-6b55-48c9-8e05-4340d2dafd50_83d04ac6-cb74-4a96-a06a-e0d5442aa126_TelecomZip.zip
-# MAGIC >>>>>>> Stashed changes
 
 # COMMAND ----------
 
 from zipfile import ZipFile
 import shutil
-
 zip_file_path = '/Workspace/Repos/chetan_1692255825295@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze/ebcca86b-6b55-48c9-8e05-4340d2dafd50_83d04ac6-cb74-4a96-a06a-e0d5442aa126_TelecomZip.zip'
 destination_folder = '/Workspace/Repos/chetan_1692255825295@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze/dump_unzipped/'
 with ZipFile(zip_file_path, 'r') as zip_ref:
@@ -24,18 +14,6 @@ print(f"File unzipped to {destination_folder}")
 
 # COMMAND ----------
 
-<<<<<<< Updated upstream
-%md
-##Display data
-
-# COMMAND ----------
-
-display(billing_df)
-display(customer_information_df)
-display(customer_rating_df)
-display(device_information_df)
-display(plans_df)
-=======
 base_path = "file:///Workspace/Repos/chetan_1692255825295@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze/dump_unzipped"
 def moveToADLS(folder_path):
     for item in dbutils.fs.ls(folder_path):
@@ -66,12 +44,7 @@ def writeAsDelta(folder_path):
             df = spark.read.format("csv").option("header", "true").option("inferSchema","true").load(file_path)
             save_path = '/mnt/wetelcodump/bronze/'
             df.write.format('delta').option("delta.columnMapping.mode", "name").mode("overwrite").save(save_path+filename)
-
 writeAsDelta(base_path)
-
-# COMMAND ----------
-
->>>>>>> Stashed changes
 
 # COMMAND ----------
 

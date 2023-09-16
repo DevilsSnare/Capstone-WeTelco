@@ -32,7 +32,7 @@ def billing_raw():
 )
 def customer_information_raw():
     customer_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_information')
-    customer_information.withColumnRenamed("system status", "system_status")
+    customer_information = customer_information.withColumnRenamed("system status", "system_status")
     return customer_information
 
 # COMMAND ----------

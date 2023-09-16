@@ -19,6 +19,10 @@ print(f"File unzipped to {destination_folder}")
 
 # COMMAND ----------
 
+mount_point = "/mnt/wetelcodump"
+
+# COMMAND ----------
+
 base_path = "file:///Workspace/Repos/chetan_1692255825295@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze/dump_unzipped"
 def moveToADLS(folder_path):
     for item in dbutils.fs.ls(folder_path):
@@ -53,6 +57,14 @@ writeAsDelta(base_path)
 
 # COMMAND ----------
 
+display(dbutils.fs.ls(mount_point))
+
+# COMMAND ----------
+
+display(dbutils.fs.ls(f"{mount_point}/bronze"))
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##### creating dlt
 
@@ -61,6 +73,11 @@ writeAsDelta(base_path)
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import dlt
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ####Billing DLT
 
 # COMMAND ----------
 
@@ -74,6 +91,24 @@ import dlt
 def billing_raw():
     billing = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Billing')
     return billing
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ####customer_information DLT
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The raw customer_information, batch data.",
+  table_properties={
+    "wetelco_delta.quality": "bronze",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def customer_information_raw():
+    customer_information = spark.read.format("delta").load(f'{mount_point}/bronze/Customer_information')
+    return customer_information
 
 # COMMAND ----------
 

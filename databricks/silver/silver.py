@@ -118,4 +118,53 @@ def customer_rating_clean():
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ####Device information Data
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col, when, first
+from pyspark.sql.window import Window
+
+@dlt.create_table(
+  comment="The cleaned device_information, ingested from delta",
+  table_properties={
+    "wetelco_deltaliv.quality": "silver",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def device_information_clean():
+    device_information_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/device_information_raw")
+
+    # Convert all columns into lower case
+    device_information_df = device_information_df.select([col(column).alias(column.lower()) for column in device_information_df.columns])
+    
+    # Step 1: Filter out rows where brand_name or model_name is null
+    device_information_df = device_information_df.filter(col("brand_name").isNotNull() & col("model_name").isNotNull())
+    
+    # Step 2: Replace null values in os_name with a non-null os_name for the same model_name if available, otherwise remove the row
+    window_spec = Window.partitionBy("model_name")
+    device_information_df = device_information_df.withColumn(
+        "os_name",
+        when(col("os_name").isNotNull(), col("os_name")).otherwise(
+            first(col("os_name"), ignorenulls=True).over(window_spec)
+        )
+    )
+    device_information_df = device_information_df.filter(col("os_name").isNotNull())
+    
+    # Step 3: Replace null values in os_vendor with a non-null os_vendor for the same os_name if available, otherwise remove the row
+    window_spec = Window.partitionBy("os_name")
+    device_information_df = device_information_df.withColumn(
+        "os_vendor",
+        when(col("os_vendor").isNotNull(), col("os_vendor")).otherwise(
+            first(col("os_vendor"), ignorenulls=True).over(window_spec)
+        )
+    )
+    device_information_df = device_information_df.filter(col("os_vendor").isNotNull())
+    
+    return device_information_df
+
+
+# COMMAND ----------
+
 

@@ -114,3 +114,66 @@ def customers_billing_history():
 
     return summary_df
 
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ######Q5: analyze customer purchase behavior and identify customers who have made more than the average number of purchases. Calculate the average purchase amount only for these
+# MAGIC customers
+
+# COMMAND ----------
+
+@dlt.create_table(
+    comment="The ad-hoc queries, ingested from delta",
+    table_properties={
+        "wetelco.quality": "silver",
+        "pipelines.autoOptimize.managed": "true"
+    }
+)
+def customer_purchase_behavior():
+    billing_clean_df = dlt.read('billing_clean')
+
+    # Register the temporary view for the billing_clean DataFrame
+    billing_clean_df.createOrReplaceTempView("billing_clean_temp_view")
+
+    # Write and execute the SQL query
+    sql_query = """
+    WITH PurchaseSummary AS (
+        SELECT
+            customer_id,
+            COUNT(billing_id) AS purchase_count,
+            AVG(bill_amount) AS avg_purchase_amount
+        FROM
+            billing_clean_temp_view
+        GROUP BY
+            customer_id
+    ),
+    AveragePurchaseCount AS (
+        SELECT
+            AVG(purchase_count) AS avg_purchase_count
+        FROM
+            PurchaseSummary
+    )
+    SELECT
+        ps.customer_id,
+        ps.purchase_count,
+        CASE
+            WHEN ps.purchase_count > apc.avg_purchase_count THEN ps.avg_purchase_amount
+            ELSE NULL
+        END AS avg_purchase_amount
+    FROM
+        PurchaseSummary ps
+    CROSS JOIN
+        AveragePurchaseCount apc
+    WHERE
+        ps.purchase_count > apc.avg_purchase_count;
+    """
+    
+    summary_df = spark.sql(sql_query)
+
+    return summary_df
+
+
+# COMMAND ----------
+
+

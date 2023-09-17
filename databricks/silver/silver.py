@@ -13,11 +13,13 @@ import dlt
 
 @dlt.create_table(
   comment="The cleaned customer_information, ingested from delta",
+  partition_cols=["system_status", "connection_type"],
   table_properties={
     "wetelco_deltaliv.quality": "silver",
     "pipelines.autoOptimize.managed": "true"
   }
 )
+
 def customer_information_clean():
     customer_information_df = dlt.read('customer_information_raw')
     # customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/customer_information_raw")
@@ -33,7 +35,8 @@ def customer_information_clean():
     
     # Remove duplicates
     customer_information_df = customer_information_df.dropDuplicates()
-    
+    customer_information_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Customer_information")
+
     return customer_information_df
 
 # COMMAND ----------
@@ -76,6 +79,8 @@ def billing_clean():
     # Remove duplicates
     billing_df = billing_df.dropDuplicates()
     
+    billing_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Billing")
+    
     return billing_df
 
 
@@ -103,6 +108,8 @@ def plans_clean():
     # Remove duplicates
     plans_df = plans_df.dropDuplicates()
     
+    plans_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Plans")
+
     return plans_df
 
 # COMMAND ----------
@@ -114,6 +121,7 @@ def plans_clean():
 
 @dlt.create_table(
   comment="The cleaned customer_rating, ingested from delta",
+  partition_cols=["rating"],
   table_properties={
     "wetelco_deltaliv.quality": "silver",
     "pipelines.autoOptimize.managed": "true"
@@ -129,6 +137,8 @@ def customer_rating_clean():
     # Remove duplicates
     customer_rating_df = customer_rating_df.dropDuplicates()
     
+    customer_rating_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Customer_rating")
+
     return customer_rating_df
 
 # COMMAND ----------
@@ -165,7 +175,9 @@ def device_information_clean():
     #replacing null with appropriate os name for the vendor Mentor Graphics
     condition_2 = (col("os_vendor") == "Mentor Graphics") & (col("os_name").isNull())
     device_information_df = device_information_df.withColumn("os_name", when(condition_2, 'Android').otherwise(col("os_name")))
-    
+
+    device_information_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Device_information")
+
     return device_information_df
 
 # COMMAND ----------

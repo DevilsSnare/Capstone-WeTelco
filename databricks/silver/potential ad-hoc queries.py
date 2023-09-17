@@ -55,3 +55,62 @@ def customers_billing_summary():
 
     return summary_df
 
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ######Q3: analyze the distribution of device brands for each operating system (OS) and determine the count of devices for each combination.
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ######Q4: analyze the billing history for each customer and identify patterns in their bill amounts.Calculate the average bill amount for each customer and compare it with the previous bill.
+
+# COMMAND ----------
+
+@dlt.create_table(
+    comment="The ad-hoc queries, ingested from delta",
+    table_properties={
+        "wetelco.quality": "silver",
+        "pipelines.autoOptimize.managed": "true"
+    }
+)
+def customers_billing_history():
+    billing_clean_df = dlt.read('billing_clean')
+
+    # Register the temporary view for the CTE
+    billing_clean_df.createOrReplaceTempView("billing_clean_temp_view")
+
+    # Write the SQL query with CTE
+    sql_query = """
+    WITH BillHistory AS (
+        SELECT
+            customer_id,
+            billing_date,
+            bill_amount,
+            LAG(bill_amount) OVER (PARTITION BY customer_id ORDER BY billing_date) AS previous_bill_amount
+        FROM
+            billing_clean_temp_view
+    )
+    SELECT
+        bh.customer_id,
+        bh.billing_date,
+        bh.bill_amount,
+        AVG(bh.bill_amount) OVER (PARTITION BY bh.customer_id ORDER BY bh.billing_date) AS avg_bill_amount,
+        bh.previous_bill_amount
+    FROM
+        BillHistory bh
+    ORDER BY
+        bh.customer_id,
+        bh.billing_date;
+    """
+
+    # Execute the SQL query
+    summary_df = spark.sql(sql_query)
+
+    return summary_df
+

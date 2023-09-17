@@ -31,4 +31,27 @@ def customers_with_multiple_devices():
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ######Q2: generate a summary of customer billing information, including the total bill amount, the number of bills issued, and the average bill amount for each customer.
+
+# COMMAND ----------
+
+@dlt.create_table(
+  comment="The ad-hoc queries, ingested from delta",
+  table_properties={
+    "wetelco.quality": "silver",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def customers_billing_summary():
+    billing_clean_df = dlt.read('billing_clean')
+
+    # Apply the logic to calculate the billing summary
+    summary_df = billing_clean_df.groupBy("customer_id").agg(
+        count("billing_id").alias("number_of_bills"),
+        sum("bill_amount").alias("total_bill_amount"),
+        avg("bill_amount").alias("average_bill_amount")
+    )
+
+    return summary_df
 

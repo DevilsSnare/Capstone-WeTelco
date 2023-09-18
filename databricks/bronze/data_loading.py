@@ -4,6 +4,10 @@
 
 # COMMAND ----------
 
+
+
+# COMMAND ----------
+
 container = 'wetelcodump'
 storage_account = 'wetelco'
 key = 'Z9G6HOyHMR7baJdrbhuE7AY7+LcquhN6SdgkUz9ggfeo4lDSQvESX/SJsVRTX+qZzEZxq+083L7z+ASt0dUiCw=='
@@ -31,7 +35,11 @@ dbutils.fs.mount(
 
 ozaid = '/Workspace/Repos/md_1692255888379@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
 chetan = '/Workspace/Repos/chetan_1692255825295@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
+<<<<<<< Updated upstream
 rohan = '/Workspace/Repos/rohan_1692255798122@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
+=======
+shivani = '/Workspace/Repos/shivani_1692255792853@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
+>>>>>>> Stashed changes
 
 # COMMAND ----------
 
@@ -40,10 +48,17 @@ if os.path.exists(ozaid):
     my_directory = ozaid
 elif os.path.exists(chetan):
     my_directory = chetan
+<<<<<<< Updated upstream
 elif os.path.exists(rohan):
     my_directory = rohan
 else:
     raise ValueError("Neither 'ozaid' nor 'chetan' nor 'rohan' directory exists.")
+=======
+elif os.path.exists(shivani):
+    my_directory = shivani
+else:
+    raise ValueError("Neither 'ozaid' nor 'chetan' nor 'shivani' directory exists.")
+>>>>>>> Stashed changes
 
 # COMMAND ----------
 

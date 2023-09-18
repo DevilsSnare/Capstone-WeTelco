@@ -12,6 +12,12 @@ import dlt
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC use wetelco;
+# MAGIC select *from customer_information_raw
+
+# COMMAND ----------
+
 @dlt.create_table(
   comment="The cleaned customer_information, ingested from delta",
   partition_cols=["system_status", "connection_type"],
@@ -23,13 +29,13 @@ import dlt
 
 def customer_information_clean():
     customer_information_df = dlt.read('customer_information_raw')
-    # customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/customer_information_raw")
+    #customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_information_raw")
     # Convert all columns into lower case
     customer_information_df = customer_information_df.select([col(column).alias(column.lower()) for column in customer_information_df.columns])
 
     # Convert bigint customer_phone to string and filter out rows where the number of characters is less than 10
     customer_information_df = customer_information_df.withColumn("customer_phone_str", col("customer_phone").cast("string"))
-    customer_information_df = customer_information_df.filter(length(col("customer_phone_str")) >= 10)
+    #customer_information_df = customer_information_df.filter(length(col("customer_phone_str")) >= 10)
     
     # Drop the temporary customer_phone_str column
     customer_information_df = customer_information_df.drop("customer_phone_str")

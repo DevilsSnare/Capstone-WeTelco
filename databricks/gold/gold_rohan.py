@@ -87,6 +87,11 @@ def year(billing):
 
 # COMMAND ----------
 
+def csat(customer_rating):
+    
+
+# COMMAND ----------
+
 spark = SparkSession.builder.appName("YourAppName").getOrCreate()
 
 @dlt.create_table(
@@ -118,15 +123,7 @@ def customer_agg_facts():
         .join(latest_payment_month,"customer_id","inner")\
         .join(latest_payment_year,"customer_id","inner")
 
-    
-    
-
-
     return customer_facts
-
-# COMMAND ----------
-
-
 
 # COMMAND ----------
 

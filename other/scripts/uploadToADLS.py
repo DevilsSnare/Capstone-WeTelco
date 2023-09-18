@@ -1,5 +1,5 @@
 ### pip install azure-storage-blob 
-### https://learn.microsoft.com/en-us/rest/api/storageservices/blob-service-rest-api
+###https://learn.microsoft.com/en-us/rest/api/storageservices/blob-service-rest-api
 
 #importing necessary libaries
 import os

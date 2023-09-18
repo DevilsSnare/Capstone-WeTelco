@@ -1,5 +1,5 @@
 -- Databricks notebook source
-use capstone
+use wetelco
 
 -- COMMAND ----------
 
@@ -47,6 +47,8 @@ FROM
 GROUP BY
     os_name,
     brand_name
+HAVING
+    os_name IS NOT NULL
 ORDER BY
     os_name,
     brand_name;

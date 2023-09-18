@@ -36,9 +36,13 @@ dbutils.fs.mount(
 ozaid = '/Workspace/Repos/md_1692255888379@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
 chetan = '/Workspace/Repos/chetan_1692255825295@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 rohan = '/Workspace/Repos/rohan_1692255798122@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
 =======
 shivani = '/Workspace/Repos/shivani_1692255792853@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
+>>>>>>> Stashed changes
+=======
+saumy = '/Workspace/Repos/saumy_1692255800150@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
 >>>>>>> Stashed changes
 
 # COMMAND ----------
@@ -49,6 +53,7 @@ if os.path.exists(ozaid):
 elif os.path.exists(chetan):
     my_directory = chetan
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 elif os.path.exists(rohan):
     my_directory = rohan
 else:
@@ -58,6 +63,12 @@ elif os.path.exists(shivani):
     my_directory = shivani
 else:
     raise ValueError("Neither 'ozaid' nor 'chetan' nor 'shivani' directory exists.")
+>>>>>>> Stashed changes
+=======
+elif os.path.exists(saumy):
+    my_directory = saumy
+else:
+    raise ValeError("Neither 'ozaid' nor 'chetan' nor 'saumy' directory exists.")
 >>>>>>> Stashed changes
 
 # COMMAND ----------

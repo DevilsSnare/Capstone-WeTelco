@@ -34,7 +34,14 @@ def customer_information_clean():
     # Drop the temporary customer_phone_str column
     customer_information_df = customer_information_df.drop("customer_phone_str")
     
-    # Remove duplicates
+    # Drop columns which are blank
+    
+    blank_columns = [col_name for col_name in customer_information_df.columns if customer_information_df.filter(col(col_name).isNull() | (col(col_name) == "")).count() > 0]
+
+    # Drop the identified blank columns
+    customer_information_df = customer_information_df.drop(*blank_columns)
+
+        # Remove duplicates
     customer_information_df = customer_information_df.dropDuplicates()
     customer_information_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Customer_information")
 

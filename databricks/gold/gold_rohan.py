@@ -24,12 +24,6 @@ def delayed_payment(billing):
 
 # COMMAND ----------
 
-billing = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/billing_clean")
-delayed_payments=delayed_payment(billing)
-display(delayed_payments)
-
-# COMMAND ----------
-
 def ontime_payment(billing):
     # Convert date columns to date type
     billing = billing.withColumn('due_date', F.to_date('due_date'))
@@ -45,12 +39,6 @@ def ontime_payment(billing):
     ontime_payments_by_customer = ontime_payments_by_customer.withColumnRenamed('sum(ontime_payment)', 'total_ontime_payments')
     
     return ontime_payments_by_customer
-
-# COMMAND ----------
-
-billing = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/billing_clean")
-ontime_payments=ontime_payment(billing)
-display(ontime_payments)
 
 # COMMAND ----------
 
@@ -99,14 +87,14 @@ def month(billing):
 # COMMAND ----------
 
 def year(billing):
-    latest_billing_date = billing.groupBy("customer_id").agg(F.max("billing_date").alias("latest_billing_date"))
-    latest_year = latest_billing_date.withColumn("latest_year", F.year("latest_billing_date"))
+    latest_billing_date = billing.groupBy("customer_id").agg(F.max("billing_date").alias("latest_billing_year"))
+    latest_year = latest_billing_date.withColumn("latest_year", F.year("latest_billing_year"))
     return latest_year
 
 
 # COMMAND ----------
 
-def csat(customer_rating):
+#def csat(customer_rating):
     
 
 # COMMAND ----------
@@ -120,12 +108,17 @@ def csat(customer_rating):
     "pipelines.autoOptimize.managed": "true"
   }
 )
-def customer_agg_facts():
-    customer_information = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_information_clean")
-    billing = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/billing_clean")
-    customer_rating=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_rating_clean")
-    device_information=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/device_information_clean")
-    plans=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/plans_clean")
+def customer_facts():
+    #customer_information = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_information_clean")
+    customer_information=dlt.read("customer_information_clean")
+    #billing = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/billing_clean")
+    billing = dlt.read("billing_clean")
+    #customer_rating=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_rating_clean")
+    customer_rating=dlt.read("customer_rating_clean")
+    #device_information=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/device_information_clean")
+    device_information=dlt.read("device_information_clean")
+    #plans=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/plans_clean")
+    plans=dlt.read("plans_clean")
     
     delayed_payments=delayed_payment(billing)
     ontime_payments=ontime_payment(billing)

@@ -48,6 +48,10 @@ for column_name in column_names:
 
 # COMMAND ----------
 
+display(stream_df.dtypes)
+
+# COMMAND ----------
+
 display(stream_df)
 
 # COMMAND ----------

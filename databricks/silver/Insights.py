@@ -131,46 +131,82 @@ grouped_df.show()
 # COMMAND ----------
 
 from pyspark.sql.functions import col, expr, when
+from pyspark.sql.functions import floor, current_date, datediff
+
 
 
 # COMMAND ----------
 
 spark = SparkSession.builder.appName("AgeGroups").getOrCreate()
 
-# Assuming customer_info_df is your DataFrame with a column 'dob'
-# If not, replace 'customer_info_df' with the actual DataFrame name
-
-# Define age ranges
-age_ranges = [
-    (0, 16, '0-16'),
-    (17, 25, '17-25'),
-    (26, 40, '26-40'),
-    (41, 60, '41-60'),
-    (61, float('inf'), '60+')
-]
-
-# Calculate age based on date of birth
 current_year = 2023  # Assuming the current year is 2023
-customer_info_df = customer_info_df.withColumn("age", current_year - col("dob").substr(1, 4))
+customer_info_df = customer_info_df.withColumn("dob", col("dob").cast("date"))
+customer_info_df = customer_info_df.withColumn("year_of_birth", year("dob"))
+customer_info_df = customer_info_df.withColumn("age", current_year - col("year_of_birth"))
 
-# Define conditions and corresponding age groups using 'when' function
-condition_expr = [
-    when((start <= customer_info_df['age']) & (customer_info_df['age'] <= end), group)
-    for start, end, group in age_ranges
+# Define conditions for age groups
+conditions = [
+    (col("age") >= 16) & (col("age") <= 25),
+    (col("age") >= 26) & (col("age") <= 40),
+    (col("age") >= 41) & (col("age") <= 60),
+    col("age") > 60
 ]
 
-# Apply conditions to create the 'age_group' column
-customer_info_df = customer_info_df.withColumn("age_group", *condition_expr)
+# Define labels for age groups
+labels = ["16-25", "26-40", "41-60", "60+"]
 
-# Show the DataFrame with the new 'age_group' column
+# Create a new column 'age_category' based on the conditions
+customer_info_df = customer_info_df.withColumn("age_category", 
+                           expr(
+                               "CASE "
+                               "WHEN {0} THEN '{1}' "
+                               "WHEN {2} THEN '{3}' "
+                               "WHEN {4} THEN '{5}' "
+                               "ELSE '{6}' END"
+                               .format(conditions[0], labels[0], conditions[1], labels[1], conditions[2], labels[2], conditions[3], labels[3])
+                           )
+                         )
+
+# Show the DataFrame with the new 'age_category' column
 customer_info_df.show()
 
 # COMMAND ----------
 
+result_df = customer_info_df.select("customer_id", "full_name", "age_group")
+
+# Show the result DataFrame
+result_df.show()
+
+# COMMAND ----------
+
+# DBTITLE 1,Most Commonly used email domains
+from pyspark.sql.functions import split, col
+from pyspark.sql.functions import col, datediff, min
 
 
-# Show the resulting DataFrame
-grouped_df.show()
+
+# COMMAND ----------
+
+customer_info_df = customer_info_df.withColumn("email_domain", split("customer_email", "@").getItem(1))
+
+# Group by email domains and count their frequency
+email_domain_counts = customer_info_df.groupBy("email_domain").count()
+email_domain_counts = email_domain_counts.orderBy(col("count").desc())
+
+# Show the result
+email_domain_counts.show()
+
+# COMMAND ----------
+
+# DBTITLE 1,Number of Active and Suspended users
+
+
+# COMMAND ----------
+
+status_counts = customer_info_df.groupBy('system_status').count()
+
+# Show the result
+status_counts.show()
 
 # COMMAND ----------
 

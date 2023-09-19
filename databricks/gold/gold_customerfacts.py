@@ -3,7 +3,6 @@
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import pandas as pd
-from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 import dlt
@@ -50,7 +49,6 @@ def customer_tier(customer_information):
     customer_tier=customer_information.groupBy("customer_id").agg(F.first("value_segment").alias("customer_plan"))
     return(customer_tier)
 
-
 # COMMAND ----------
 
 # DBTITLE 1,Customer_device
@@ -59,7 +57,6 @@ def customer_device(device_information):
         concat_ws(",", collect_list(concat_ws(",", "brand_name", "model_name"))).alias("devices")
     )
     return customer_device
-
 
 # COMMAND ----------
 
@@ -78,19 +75,12 @@ def customer_value(billing):
     total_customer_value = total_customer_value.withColumn("average_product", total_customer_value["avg_bill_value"] * total_customer_value["avg_frequency_rate"])
     return total_customer_value
 
-
-
 # COMMAND ----------
 
 # DBTITLE 1,latest payment month
 def month(billing):
-
     latest_billing_date = billing.groupBy("customer_id").agg(F.max("billing_date").alias("latest_billing_date"))
-
- 
-
-# If you want to extract the month from the latest billing date:
-
+    # If you want to extract the month from the latest billing date:
     latest_month = latest_billing_date.withColumn("latest_month", F.month("latest_billing_date"))
     latest_month=latest_month.drop("latest_billing_date")
 
@@ -114,15 +104,11 @@ def year(billing):
 # DBTITLE 1,CSAT Score by customer
 def csat(customer_rating):
     csat_score = customer_information.groupBy("customer_id").agg(avg(col("rating")).alias("csat_score"))
-    return csat_score
-
-    
+    return csat_score    
 
 # COMMAND ----------
 
 # DBTITLE 1,Creating Dlt pipeline
-#spark = SparkSession.builder.appName("YourAppName").getOrCreate()
-
 @dlt.create_table(
   comment="The customers aggregated facts",
   table_properties={

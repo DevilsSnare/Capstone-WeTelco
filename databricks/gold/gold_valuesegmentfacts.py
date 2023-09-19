@@ -2,7 +2,6 @@
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import pandas as pd
-from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 import dlt
@@ -15,8 +14,6 @@ def rev_tier(customer_information,billing):
     .groupby("value_segment") \
     .agg(sum("bill_amount").alias("total_revenue"))
     return revenue_by_tier
-
-    
 
 # COMMAND ----------
 

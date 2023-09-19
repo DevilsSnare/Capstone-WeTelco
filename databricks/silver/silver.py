@@ -12,12 +12,6 @@ import dlt
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC use wetelco;
-# MAGIC select *from customer_information_raw
-
-# COMMAND ----------
-
 @dlt.create_table(
   comment="The cleaned customer_information, ingested from delta",
   partition_cols=["system_status", "connection_type"],

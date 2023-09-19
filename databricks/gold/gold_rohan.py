@@ -94,7 +94,10 @@ def year(billing):
 
 # COMMAND ----------
 
-#def csat(customer_rating):
+def csat(customer_rating):
+    csat_score = customer_information.groupBy("customer_id").agg(avg(col("rating")).alias("csat_score"))
+    return csat_score
+
     
 
 # COMMAND ----------

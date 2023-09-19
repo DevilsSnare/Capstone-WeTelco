@@ -107,7 +107,3 @@ display(dbutils.fs.ls(mount_point))
 # COMMAND ----------
 
 display(dbutils.fs.ls(f"{mount_point}/bronze"))
-
-# COMMAND ----------
-
-

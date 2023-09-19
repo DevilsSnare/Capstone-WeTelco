@@ -1,4 +1,5 @@
 # Databricks notebook source
+<<<<<<< Updated upstream
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import dlt
@@ -136,4 +137,6 @@ create_customer_segment_gold_table()
 
 # COMMAND ----------
 
+=======
+>>>>>>> Stashed changes
 

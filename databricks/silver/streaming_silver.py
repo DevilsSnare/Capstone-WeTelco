@@ -14,7 +14,8 @@ import dlt
   }
 )
 def streaming_data_clean():
-    streaming_df = dlt.readStream('streaming_data')
+    # streaming_df = dlt.readStream('streaming_data')
+    streaming_df = spark.read.format('delta').load('dbfs:/pipelines/11973354-ac67-44a4-9702-ec77fe09bfbd/tables/streaming_data')
     streaming_df = streaming_df.select([col(column).alias(column.lower()) for column in streaming_df.columns])
     
     streaming_df = streaming_df.dropDuplicates()
@@ -22,3 +23,7 @@ def streaming_data_clean():
     # streaming_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/streaming")
 
     return streaming_df
+
+# COMMAND ----------
+
+

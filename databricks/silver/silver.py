@@ -20,26 +20,34 @@ import dlt
     "pipelines.autoOptimize.managed": "true"
   }
 )
-
+@dlt.expect_or_drop("valid customer_id", "customer_id IS NOT NULL")
 def customer_information_clean():
     customer_information_df = dlt.read('customer_information_raw')
-    #customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/11973354-ac67-44a4-9702-ec77fe09bfbd/tables/customer_information_raw")
-    # Convert all columns into lower case
     customer_information_df = customer_information_df.select([col(column).alias(column.lower()) for column in customer_information_df.columns])
-
-    # Convert bigint customer_phone to string and filter out rows where the number of characters is less than 10
-    customer_information_df = customer_information_df.withColumn("customer_phone_str", col("customer_phone").cast("string"))
-    #customer_information_df = customer_information_df.filter(length(col("customer_phone_str")) >= 10)
-    
-    # Drop the temporary customer_phone_str column
-    customer_information_df = customer_information_df.drop("customer_phone_str")    
-   
-
-        # Remove duplicates
+    customer_information_df = customer_information_df.withColumn("customer_phone", when(length(col("customer_phone").cast("string"))<10, None).otherwise(col("customer_phone")))     
     customer_information_df = customer_information_df.dropDuplicates()
     customer_information_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Customer_information")
-
     return customer_information_df
+
+    """
+    This Python script defines a Delta Live table and a data cleaning function to process customer information data.
+
+    Table Creation:
+    - A Delta Live table named "customer_information_clean" is created with specific metadata and properties.
+
+    Data Validation:
+    - Data validation is performed to ensure that the "customer_id" column is not null. Rows with null "customer_id" are either expected to be valid or dropped from the DataFrame based on the "expect_or_drop" decorator.
+
+    Data Processing Steps:
+    - Data is read from the "customer_information_raw" source table.
+    - All column names are converted to lowercase for consistency.
+    - Phone numbers with less than 10 digits are replaced with "None" in the "customer_phone" column.
+    - Duplicate rows in the DataFrame are removed.
+    - The cleaned data is written back to a Delta Lake table with overwrite mode.
+
+    Function Return:
+    - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
+    """
 
 # COMMAND ----------
 
@@ -48,8 +56,6 @@ def customer_information_clean():
 
 # COMMAND ----------
 
-
-# Define a UDF to calculate the mean of bill_amount for each customer_id
 def calculate_mean_udf(bill_amount_col, customer_id_col):
     window_spec = Window().partitionBy(customer_id_col)
     return mean(bill_amount_col).over(window_spec)
@@ -63,28 +69,37 @@ def calculate_mean_udf(bill_amount_col, customer_id_col):
 )
 def billing_clean():
     billing_df = dlt.read('billing_raw')
-    # billing_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/billing_raw")
     billing_df = billing_df.select([col(column).alias(column.lower()) for column in billing_df.columns])
-    
-    # Replace '?' with null and cast bill_amount to a numeric type (e.g., double)
     billing_df = billing_df.withColumn("bill_amount", when(col("bill_amount") == '?', None).otherwise(col("bill_amount").cast("double")))
-    
-    # Calculate the mean of bill_amount for each customer_id using the UDF
     billing_df = billing_df.withColumn("mean_bill_amount", calculate_mean_udf("bill_amount", "customer_id"))
-    
-    # Fill null values in bill_amount with the calculated mean_bill_amount
     billing_df = billing_df.withColumn("bill_amount", when(col("bill_amount").isNull(), col("mean_bill_amount")).otherwise(col("bill_amount")))
-    
-    # Drop the mean_bill_amount column as it's no longer needed
     billing_df = billing_df.drop("mean_bill_amount")
-    
-    # Remove duplicates
     billing_df = billing_df.dropDuplicates()
-    
     billing_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Billing")
-    
     return billing_df
 
+    """
+    This Python script defines a Delta Live table and a data cleaning function to process billing information data.
+
+    User-Defined Function (UDF):
+    - `calculate_mean_udf(bill_amount_col, customer_id_col)` calculates the mean of the "bill_amount_col" partitioned by "customer_id_col" using a window specification.
+
+    Table Creation:
+    - A Delta Lake table named "billing_clean" is created with specific metadata and properties.
+
+    Data Processing Steps:
+    - Data is read from the "billing_raw" source table.
+    - All column names are converted to lowercase for consistency.
+    - Entries with a value of '?' in the "bill_amount" column are replaced with "None" (null) and cast to double.
+    - A new column "mean_bill_amount" is added to the DataFrame using the `calculate_mean_udf` function, representing the mean bill amount per customer.
+    - Null values in the "bill_amount" column are replaced with their corresponding "mean_bill_amount."
+    - The "mean_bill_amount" column is dropped from the DataFrame.
+    - Duplicate rows in the DataFrame are removed.
+    - The cleaned data is written back to a Delta Lake table with overwrite mode.
+
+    Function Return:
+    - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
+    """
 
 # COMMAND ----------
 
@@ -102,17 +117,26 @@ def billing_clean():
 )
 def plans_clean():
     plans_df = dlt.read('plans_raw')
-    # plans_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/plans_raw")
-
-    # Convert all columns into lower case
     plans_df = plans_df.select([col(column).alias(column.lower()) for column in plans_df.columns])
-    
-    # Remove duplicates
     plans_df = plans_df.dropDuplicates()
-    
     plans_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Plans")
-
     return plans_df
+
+    """
+    This Python script defines a Delta Live table and a data cleaning function to process plans data.
+
+    Table Creation:
+    - A Delta Lake table named "plans_clean" is created with specific metadata and properties.
+
+    Data Processing Steps:
+    - Data is read from the "plans_raw" source table.
+    - All column names are converted to lowercase for consistency.
+    - Duplicate rows in the DataFrame are removed.
+    - The cleaned data is written back to a Delta Lake table with overwrite mode.
+
+    Function Return:
+    - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
+    """
 
 # COMMAND ----------
 
@@ -129,19 +153,37 @@ def plans_clean():
     "pipelines.autoOptimize.managed": "true"
   }
 )
+@dlt.expect_or_drop("valid customer_id", "customer_id IS NOT NULL")
 def customer_rating_clean():
     customer_rating_df = dlt.read('customer_rating_raw')
-    # customer_rating_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/customer_rating_raw")
-
-    # Convert all columns into lower case
     customer_rating_df = customer_rating_df.select([col(column).alias(column.lower()) for column in customer_rating_df.columns])
-    
-    # Remove duplicates
     customer_rating_df = customer_rating_df.dropDuplicates()
-    
     customer_rating_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Customer_rating")
-
     return customer_rating_df
+    
+    """
+    This Python script defines a Delta Live table and a data cleaning function to process customer rating data.
+
+    Table Creation:
+    - A Delta Lake table named "customer_rating_clean" is created with specific metadata and properties.
+    - Comment: The cleaned customer_rating, ingested from delta.
+    - Partition Columns: ["rating"]
+    - Table Properties:
+        - wetelco_deltaliv.quality: "silver"
+        - pipelines.autoOptimize.managed: "true"
+
+    Data Validation:
+    - Data validation is performed to ensure that the "customer_id" column is not null. Rows with null "customer_id" are either expected to be valid or dropped from the DataFrame based on the "expect_or_drop" decorator.
+
+    Data Processing Steps:
+    - Data is read from the "customer_rating_raw" source table.
+    - All column names are converted to lowercase for consistency.
+    - Duplicate rows in the DataFrame are removed.
+    - The cleaned data is written back to a Delta Lake table with overwrite mode.
+
+    Function Return:
+    - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
+    """
 
 # COMMAND ----------
 
@@ -151,37 +193,46 @@ def customer_rating_clean():
 # COMMAND ----------
 
 @dlt.create_table(
-  comment="The cleaned device information ingested from delta and partitioned by brand name",
-  partition_cols=["brand_name"],
-  table_properties={
+comment="The cleaned device information ingested from delta and partitioned by brand name",
+partition_cols=["brand_name"],
+table_properties={
     "wetelco.quality": "silver",
     "pipelines.autoOptimize.managed": "true"
-  }
+}
 )
 @dlt.expect_or_drop("valid customer_id", "customer_id IS NOT NULL")
-def device_information_clean():
-    
+def device_information_clean(): 
     device_information_df = dlt.read('device_information_raw')
-    # device_information_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/device_information_raw")
     device_information_df = device_information_df.select([col(column).alias(column.lower()) for column in device_information_df.columns])
-    
-    #dropping duplicates
     device_information_df = device_information_df.dropDuplicates()
-
-    #dropping records that have columns 3rd onwards all values as null
     device_information_df = device_information_df.dropna(thresh=3)
-
-    #replacing null with appropriate os name for the vendor Nokia
     condition_1 = (col("os_vendor") == "NOKIA") & (col("os_name").isNull())
     device_information_df = device_information_df.withColumn("os_name", when(condition_1, 'Series 30+').otherwise(col("os_name")))
-
-    #replacing null with appropriate os name for the vendor Mentor Graphics
     condition_2 = (col("os_vendor") == "Mentor Graphics") & (col("os_name").isNull())
     device_information_df = device_information_df.withColumn("os_name", when(condition_2, 'Android').otherwise(col("os_name")))
-
     device_information_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Device_information")
-
     return device_information_df
+
+    """
+    This Python script defines a Delta Live table and a data cleaning function to process device information data.
+
+    Table Creation:
+    - A Delta Lake table named "device_information_clean" is created with specific metadata and properties.
+
+    Data Validation:
+    - Data validation is performed to ensure that the "customer_id" column is not null. Rows with null "customer_id" are either expected to be valid or dropped from the DataFrame based on the "expect_or_drop" decorator.
+
+    Data Processing Steps:
+    - Data is read from the "device_information_raw" source table.
+    - All column names are converted to lowercase for consistency.
+    - Duplicate rows in the DataFrame are removed.
+    - Rows with less than 3 non-null values are dropped from the DataFrame.
+    - Conditional replacements are performed for missing values in the "os_name" column based on "os_vendor."
+    - The cleaned data is written back to a Delta Lake table with overwrite mode.
+
+    Function Return:
+    - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
+    """
 
 # COMMAND ----------
 

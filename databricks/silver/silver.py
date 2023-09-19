@@ -250,11 +250,11 @@ table_properties={
 )
 @dlt.expect_or_drop("valid call_id", "call_id IS NOT NULL")
 def fraud_clean(): 
-    fraud_df = dlt.read('fraud_raw')
+    fraud_df = dlt.read_stream('fraud_raw')
     fraud_df = fraud_df.select([col(column).alias(column.lower()) for column in fraud_df.columns])
 
     fraud_df = fraud_df.withColumn("start_time", to_timestamp("start_time", "yyyy-MM-dd HH:mm:ss")).withColumn("end_time", to_timestamp("end_time", "yyyy-MM-dd HH:mm:ss")).withColumn("event_timestamp", to_timestamp("event_timestamp", "yyyy-MM-dd HH:mm:ss"))
 
     fraud_df = fraud_df.withColumn("EventProcessedUtcTime",date_format(from_utc_timestamp(col("EventProcessedUtcTime"), "UTC"), "yyyy-MM-dd HH:mm:ss")).withColumn("EventEnqueuedUtcTime",date_format(from_utc_timestamp(col("EventEnqueuedUtcTime"), "UTC"), "yyyy-MM-dd HH:mm:ss"))
-    fraud_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Fraud")
+    # fraud_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Fraud")
     return fraud_df

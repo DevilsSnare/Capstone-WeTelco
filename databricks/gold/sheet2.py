@@ -9,20 +9,7 @@ import dlt
 
 # COMMAND ----------
 
-#customer_information = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_information_clean")
-    customer_information=dlt.read("customer_information_clean")
-    #billing = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/billing_clean")
-    billing = dlt.read("billing_clean")
-    #customer_rating=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_rating_clean")
-    customer_rating=dlt.read("customer_rating_clean")
-    #device_information=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/device_information_clean")
-    device_information=dlt.read("device_information_clean")
-    #plans=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/plans_clean")
-    plans=dlt.read("plans_clean")
-
-# COMMAND ----------
-
-def rev_tier1(customer_information,billing):
+def rev_tier(customer_information,billing):
     joined_data = customer_information.join(billing, on="customer_id")
     revenue_by_tier = joined_data \
     .groupby("value_segment") \
@@ -30,13 +17,6 @@ def rev_tier1(customer_information,billing):
     return revenue_by_tier
 
     
-
-# COMMAND ----------
-
-customer_information = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_information_clean")
-billing = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/billing_clean")
-revenue=rev_tier1(customer_information,billing)
-display(revenue)
 
 # COMMAND ----------
 
@@ -48,22 +28,11 @@ def no_of_customers(customer_information):
 
 # COMMAND ----------
 
-no_of_customer=no_of_customers(customer_information)
-display(no_of_customer)
-
-# COMMAND ----------
-
-def rating_by_value_segments(customer_information,customer_ratings):
-    result = customer_information.join(customer_ratings, on="customer_id")
+def rating_by_value_segments(customer_information,customer_rating):
+    result = customer_information.join(customer_rating, on="customer_id")
     ratings=result.groupby("value_segment").agg(avg("rating").alias("rating_by_value_segments"))
     #average_rating_by_tier = joined_df.groupBy("tier").agg(avg("rating").alias("avg_rating"))
     return ratings
-
-# COMMAND ----------
-
-customer_rating=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_rating_clean")
-rating_by_value_segments=rating_by_value_segments(customer_information,customer_rating)
-display(rating_by_value_segments)
 
 # COMMAND ----------
 
@@ -84,23 +53,42 @@ def inactive_customers(customer_information,billing):
 
 # COMMAND ----------
 
-inactive_customers=inactive_customers(customer_information,billing)
-display(inactive_customers)
-
-# COMMAND ----------
-
 def csat(customer_information,customer_rating):
     joined_df = customer_information.join(customer_rating, "customer_id")
 
 # Calculate the CSAT score per tier
-    csat_score = customer_information.groupBy("value_segment").agg(avg(col("rating")).alias("csat_score"))
+    csat_score = joined_df.groupBy("value_segment").agg(avg(col("rating")).alias("csat_score"))
     return csat_score
 
 # COMMAND ----------
 
-csat_score=csat(customer_information,customer_rating)
-display(csat_score)
+@dlt.create_table(
+  comment="The sheet2 aggregated facts",
+  table_properties={
+    "wetelco_deltaliv.quality": "gold",
+    "pipelines.autoOptimize.managed": "true"
+  }
+)
+def sheet2():
+    customer_information=dlt.read("customer_information_clean")
+    #customer_information = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_information_clean")
+    billing = dlt.read("billing_clean")
+    #billing = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/billing_clean")
+    customer_rating=dlt.read("customer_rating_clean")
+    #customer_rating=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_rating_clean")
+    device_information=dlt.read("device_information_clean")
+    #device_information=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/device_information_clean")
+    plans=dlt.read("plans_clean")
+    #plans=spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/plans_clean")
 
-# COMMAND ----------
-
+    revenue_by_tier=rev_tier(customer_information,billing)
+    customer_per_tier=no_of_customers(customer_information)
+    rating_by_value_segment=rating_by_value_segments(customer_information,customer_rating)
+    inactive_customers_by_tier=inactive_customers(customer_information,billing)
+    csat_score_by_tier=csat(customer_information,customer_rating)
+    sheet2_fact=revenue_by_tier.join(customer_per_tier,"value_segment","inner")\
+    .join(rating_by_value_segment,"value_segment","inner")\
+    .join(inactive_customers_by_tier,"value_segment","inner")\
+    .join(csat_score_by_tier,"value_segment","inner")
+    return sheet2_fact
 

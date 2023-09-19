@@ -1,0 +1,24 @@
+drop duplicates in every table
+
+column headers in lowercase and without spaces
+
+table billing col bill_amount missing values as ?
+check for date formats
+
+table customer_information col phone values missing and with less digits
+table customer_information col system status missing
+table customer_information col connection type missing
+
+table device information col brand name missing
+table device information col model name missing
+table device information col os name missing
+table device information col os vendor missing
+table device added information available from internet
+
+phone numbers?
+
+
+IN STREAMING:
+
+columns headers: add underscore in column names, to lowercase also 
+convert to datetime: Start Time, End Time, EventProcessedUtcTime, Event Timestamp, EventEnqueuedUtcTime, 

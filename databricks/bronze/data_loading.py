@@ -31,6 +31,9 @@ dbutils.fs.mount(
 
 ozaid = '/Workspace/Repos/md_1692255888379@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
 chetan = '/Workspace/Repos/chetan_1692255825295@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
+rohan = '/Workspace/Repos/rohan_1692255798122@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
+shivani = '/Workspace/Repos/shivani_1692255792853@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
+saumy = '/Workspace/Repos/saumy_1692255800150@npmentorskool.onmicrosoft.com/Capstone-WeTelco/databricks/bronze'
 
 # COMMAND ----------
 
@@ -39,8 +42,14 @@ if os.path.exists(ozaid):
     my_directory = ozaid
 elif os.path.exists(chetan):
     my_directory = chetan
+elif os.path.exists(rohan):
+    my_directory = rohan
+elif os.path.exists(shivani):
+    my_directory = shivani
+elif os.path.exists(saumy):
+    my_directory = saumy
 else:
-    raise ValueError("Neither 'ozaid' nor 'chetan' directory exists.")
+    raise ValeError("No directory found.")
 
 # COMMAND ----------
 

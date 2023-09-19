@@ -10,28 +10,47 @@ import dlt
 # COMMAND ----------
 
 def delayed_payment(billing):
+    # Convert date columns to date type
     billing = billing.withColumn('due_date', F.to_date('due_date'))
     billing = billing.withColumn('payment_date', F.to_date('payment_date'))
-    #billing = billing.withColumn('billing_date', F.to_date('billing_date'))
-    billing = billing.withColumn('late_payment', billing['payment_date'] > billing['due_date'])
     
-    # Count the number of delayed payments
-    total_delayed_payments = billing.filter(billing['late_payment'] == True).count()
-     # Create a DataFrame with a single row and column to hold the total delayed payments count
-    total_delayed_payments = spark.createDataFrame([(total_delayed_payments,)], ["total_delayed_payments"])
-    return total_delayed_payments
+    # Calculate late payment status
+    billing = billing.withColumn('late_payment', when(billing['payment_date'] > billing['due_date'], 1).otherwise(0))
+    
+    # Group by customer_id and sum delayed payments
+    delayed_payments = billing.groupBy('customer_id').agg({'late_payment': 'sum'}).withColumnRenamed('sum(late_payment)', 'total_delayed_payments')
+    
+    return delayed_payments
+
+# COMMAND ----------
+
+billing = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/billing_clean")
+delayed_payments=delayed_payment(billing)
+display(delayed_payments)
 
 # COMMAND ----------
 
 def ontime_payment(billing):
-    # Count the number of ontime payments
+    # Convert date columns to date type
     billing = billing.withColumn('due_date', F.to_date('due_date'))
     billing = billing.withColumn('billing_date', F.to_date('billing_date'))
-    billing = billing.withColumn('ontime_payment', billing['due_date'] > billing['billing_date'])
-    total_ontime_payments = billing.filter(billing['ontime_payment'] == True).count()
-    total_ontime_payments = spark.createDataFrame([(total_ontime_payments,)], ["total_ontime_payments"])
-    return total_ontime_payments
+    
+    # Calculate on-time payment status
+    billing = billing.withColumn('ontime_payment', when(billing['due_date'] > billing['billing_date'], 1).otherwise(0))
+    
+    # Group by customer_id and calculate total on-time payments for each customer
+    ontime_payments_by_customer = billing.groupBy('customer_id').agg({'ontime_payment': 'sum'})
+    
+    # Rename columns for clarity
+    ontime_payments_by_customer = ontime_payments_by_customer.withColumnRenamed('sum(ontime_payment)', 'total_ontime_payments')
+    
+    return ontime_payments_by_customer
 
+# COMMAND ----------
+
+billing = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/billing_clean")
+ontime_payments=ontime_payment(billing)
+display(ontime_payments)
 
 # COMMAND ----------
 
@@ -92,7 +111,7 @@ def csat(customer_rating):
 
 # COMMAND ----------
 
-spark = SparkSession.builder.appName("YourAppName").getOrCreate()
+#spark = SparkSession.builder.appName("YourAppName").getOrCreate()
 
 @dlt.create_table(
   comment="The customers aggregated facts",

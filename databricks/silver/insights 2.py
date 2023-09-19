@@ -46,4 +46,20 @@ repeat_customers.show()
 
 # COMMAND ----------
 
+# DBTITLE 1,calculate the average customer rating 
+
+
+# COMMAND ----------
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import avg
+
+# Calculate the average customer rating
+average_rating = customer_rating_df.select(avg("rating").alias("average_rating"))
+
+# Show the average rating
+average_rating.show()
+
+# COMMAND ----------
+
 

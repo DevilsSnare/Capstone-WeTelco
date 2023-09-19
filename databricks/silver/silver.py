@@ -22,8 +22,8 @@ import dlt
 )
 
 def customer_information_clean():
-    # customer_information_df = dlt.read('customer_information_raw')
-    customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/11973354-ac67-44a4-9702-ec77fe09bfbd/tables/customer_information_raw")
+    customer_information_df = dlt.read('customer_information_raw')
+    #customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/11973354-ac67-44a4-9702-ec77fe09bfbd/tables/customer_information_raw")
     # Convert all columns into lower case
     customer_information_df = customer_information_df.select([col(column).alias(column.lower()) for column in customer_information_df.columns])
 

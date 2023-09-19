@@ -1,4 +1,5 @@
 # Databricks notebook source
+# DBTITLE 1,Importing libraries
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import pandas as pd
@@ -9,6 +10,7 @@ import dlt
 
 # COMMAND ----------
 
+# DBTITLE 1,Number of delayed Payments
 def delayed_payment(billing):
     # Convert date columns to date type
     billing = billing.withColumn('due_date', F.to_date('due_date'))
@@ -24,6 +26,7 @@ def delayed_payment(billing):
 
 # COMMAND ----------
 
+# DBTITLE 1,Number of on-time payments
 def ontime_payment(billing):
     # Convert date columns to date type
     billing = billing.withColumn('due_date', F.to_date('due_date'))
@@ -42,6 +45,7 @@ def ontime_payment(billing):
 
 # COMMAND ----------
 
+# DBTITLE 1,Customer Tier
 def customer_tier(customer_information):
     customer_tier=customer_information.groupBy("customer_id").agg(F.first("value_segment").alias("customer_plan"))
     return(customer_tier)
@@ -49,15 +53,17 @@ def customer_tier(customer_information):
 
 # COMMAND ----------
 
+# DBTITLE 1,Customer_device
 def customer_device(device_information):
     customer_device = device_information.groupBy("customer_id").agg(
-        F.collect_list(F.struct("brand_name", "model_name")).alias("devices")
+        concat_ws(",", collect_list(concat_ws(",", "brand_name", "model_name"))).alias("devices")
     )
     return customer_device
 
 
 # COMMAND ----------
 
+# DBTITLE 1,Total customer value
 def customer_value(billing):
     avg_bill = billing.groupBy("customer_id").agg(F.avg("bill_amount").alias("avg_bill_value"))
 
@@ -65,7 +71,7 @@ def customer_value(billing):
     window_spec = Window.partitionBy("customer_id").orderBy("billing_date")
     billing = billing.withColumn("billing_date", F.to_date("billing_date"))
     billing = billing.withColumn("days_between_billings", F.datediff("billing_date", F.lag("billing_date").over(window_spec)))
-    avg_frequency = billing.groupBy("customer_id").agg(F.avg("days_between_billings").alias("avg_frequency_rate"))
+    avg_frequency = billing.groupBy("customer_id").agg(F.avg(coalesce("days_between_billings", lit(1))).alias("avg_frequency_rate"))
 
 # Join the two DataFrames and calculate the product
     total_customer_value = avg_bill.join(avg_frequency, on="customer_id", how="inner")
@@ -76,24 +82,36 @@ def customer_value(billing):
 
 # COMMAND ----------
 
+# DBTITLE 1,latest payment month
 def month(billing):
+
     latest_billing_date = billing.groupBy("customer_id").agg(F.max("billing_date").alias("latest_billing_date"))
 
-# If you want to extract the month from the latest billing date:
-    latest_month = latest_billing_date.withColumn("latest_month", F.month("latest_billing_date"))
-    return latest_month
+ 
 
+# If you want to extract the month from the latest billing date:
+
+    latest_month = latest_billing_date.withColumn("latest_month", F.month("latest_billing_date"))
+    latest_month=latest_month.drop("latest_billing_date")
+
+    return latest_month
 
 # COMMAND ----------
 
+# DBTITLE 1,latest payment year
 def year(billing):
+
     latest_billing_date = billing.groupBy("customer_id").agg(F.max("billing_date").alias("latest_billing_year"))
+
     latest_year = latest_billing_date.withColumn("latest_year", F.year("latest_billing_year"))
+    latest_year=latest_year.drop("latest_billing_year")
+
     return latest_year
 
 
 # COMMAND ----------
 
+# DBTITLE 1,CSAT Score by customer
 def csat(customer_rating):
     csat_score = customer_information.groupBy("customer_id").agg(avg(col("rating")).alias("csat_score"))
     return csat_score
@@ -102,6 +120,7 @@ def csat(customer_rating):
 
 # COMMAND ----------
 
+# DBTITLE 1,Creating Dlt pipeline
 #spark = SparkSession.builder.appName("YourAppName").getOrCreate()
 
 @dlt.create_table(

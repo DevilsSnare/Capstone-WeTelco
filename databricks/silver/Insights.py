@@ -211,3 +211,22 @@ status_counts.show()
 # COMMAND ----------
 
 
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col, count, collect_set
+
+
+# COMMAND ----------
+
+status_count_by_connection_type = customer_info_df.groupBy('connection_type', 'system_status') \
+    .agg(count('*').alias('count'))
+
+# Show the result
+
+status_count_by_connection_type.show()
+
+
+# COMMAND ----------
+
+

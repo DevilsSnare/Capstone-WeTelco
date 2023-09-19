@@ -22,8 +22,8 @@ import dlt
 )
 
 def customer_information_clean():
-    customer_information_df = dlt.read('customer_information_raw')
-    #customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_information_raw")
+    # customer_information_df = dlt.read('customer_information_raw')
+    customer_information_df = spark.read.format("delta").load("dbfs:/pipelines/11973354-ac67-44a4-9702-ec77fe09bfbd/tables/customer_information_raw")
     # Convert all columns into lower case
     customer_information_df = customer_information_df.select([col(column).alias(column.lower()) for column in customer_information_df.columns])
 
@@ -32,14 +32,8 @@ def customer_information_clean():
     #customer_information_df = customer_information_df.filter(length(col("customer_phone_str")) >= 10)
     
     # Drop the temporary customer_phone_str column
-    customer_information_df = customer_information_df.drop("customer_phone_str")
-    
-    # Drop columns which are blank
-    
-    blank_columns = [col_name for col_name in customer_information_df.columns if customer_information_df.filter(col(col_name).isNull() | (col(col_name) == "")).count() > 0]
-
-    # Drop the identified blank columns
-    customer_information_df = customer_information_df.drop(*blank_columns)
+    customer_information_df = customer_information_df.drop("customer_phone_str")    
+   
 
         # Remove duplicates
     customer_information_df = customer_information_df.dropDuplicates()
@@ -166,8 +160,9 @@ def customer_rating_clean():
 )
 @dlt.expect_or_drop("valid customer_id", "customer_id IS NOT NULL")
 def device_information_clean():
+    
     device_information_df = dlt.read('device_information_raw')
-    # device_information_df = spark.read.format("delta").load("dbfs:/pipelines/daa0e31b-1862-4679-9ea2-0c6cd43ac09d/tables/device_information_raw")
+    # device_information_df = spark.read.format("delta").load("dbfs:/pipelines/f7c91f60-3450-426b-80d0-e890be30ed63/tables/device_information_raw")
     device_information_df = device_information_df.select([col(column).alias(column.lower()) for column in device_information_df.columns])
     
     #dropping duplicates

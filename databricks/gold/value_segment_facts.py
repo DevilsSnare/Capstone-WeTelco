@@ -63,13 +63,13 @@ def csat(customer_information,customer_rating):
 # COMMAND ----------
 
 @dlt.create_table(
-  comment="The sheet2 aggregated facts",
+  comment="Aggregated facts by value segment",
   table_properties={
     "wetelco_deltaliv.quality": "gold",
     "pipelines.autoOptimize.managed": "true"
   }
 )
-def sheet2():
+def value_segment_facts():
     customer_information=dlt.read("customer_information_clean")
     #customer_information = spark.read.format("delta").load("dbfs:/pipelines/bdcffee6-ab29-4f45-995b-43408227fe5d/tables/customer_information_clean")
     billing = dlt.read("billing_clean")

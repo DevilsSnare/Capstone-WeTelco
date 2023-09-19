@@ -25,6 +25,10 @@ device_info_df.display()
 
 # COMMAND ----------
 
+customer_info_df.display()
+
+# COMMAND ----------
+
 # DBTITLE 1,Total Revenue
 
 
@@ -103,11 +107,70 @@ result_df.show()
 
 # COMMAND ----------
 
+# DBTITLE 1,Revenue based on connection type
 
 
 # COMMAND ----------
 
+joined_df = billing_df.join(customer_info_df, "customer_id", "inner")
 
+# Select connection_type and bill_amount
+#joined_df.display()
+#grouped_df = result_df.groupBy('customer_id').agg(sum('bill_amount').alias('total_bill_amount'))
+# Show the result DataFrame
+grouped_df = joined_df.groupBy('connection_type').agg(sum('bill_amount').alias('total_bill_amount'))
+
+# Show the resulting DataFrame
+grouped_df.show()
+
+# COMMAND ----------
+
+# DBTITLE 1,Age Distribution of customers
+
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col, expr, when
+
+
+# COMMAND ----------
+
+spark = SparkSession.builder.appName("AgeGroups").getOrCreate()
+
+# Assuming customer_info_df is your DataFrame with a column 'dob'
+# If not, replace 'customer_info_df' with the actual DataFrame name
+
+# Define age ranges
+age_ranges = [
+    (0, 16, '0-16'),
+    (17, 25, '17-25'),
+    (26, 40, '26-40'),
+    (41, 60, '41-60'),
+    (61, float('inf'), '60+')
+]
+
+# Calculate age based on date of birth
+current_year = 2023  # Assuming the current year is 2023
+customer_info_df = customer_info_df.withColumn("age", current_year - col("dob").substr(1, 4))
+
+# Define conditions and corresponding age groups using 'when' function
+condition_expr = [
+    when((start <= customer_info_df['age']) & (customer_info_df['age'] <= end), group)
+    for start, end, group in age_ranges
+]
+
+# Apply conditions to create the 'age_group' column
+customer_info_df = customer_info_df.withColumn("age_group", *condition_expr)
+
+# Show the DataFrame with the new 'age_group' column
+customer_info_df.show()
+
+# COMMAND ----------
+
+
+
+# Show the resulting DataFrame
+grouped_df.show()
 
 # COMMAND ----------
 

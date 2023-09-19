@@ -118,4 +118,50 @@ print("Most Popular Device Model:", most_popular_model["model_name"])
 
 # COMMAND ----------
 
+# DBTITLE 1, obtain the relation between bills paid and the customer rating. 
+
+
+# COMMAND ----------
+
+from pyspark.sql.functions import sum, avg
+
+# Join billing data with customer rating data on customer_id
+joined_data = billing_df.join(customer_rating_df, "customer_id", "inner")
+
+# Group by customer_id and calculate total bill amount and average rating for each customer
+result = joined_data.groupBy("customer_id").agg(
+    sum("bill_amount").alias("total_bill_amount"),
+    avg("rating").alias("average_rating")
+)
+
+# Show the result
+result.show()
+
+# COMMAND ----------
+
+# DBTITLE 1,obtain the issues based on the feedback from customers 
+
+
+# COMMAND ----------
+
+
+
+from pyspark.sql.functions import col, split, array_contains
+
+# Split the feedback column into an array of words
+split_feedback = customer_rating_df.withColumn("words", split(col("feedback"), " "))
+
+# Check if the words array contains specific keywords
+filtered_feedback = split_feedback.filter(
+    (array_contains(col("words"), "issue")) |
+    (array_contains(col("words"), "Not happy")) |
+    (array_contains(col("words"), "facing")) |
+    (array_contains(col("words"), "trouble"))
+)
+
+# Show the filtered feedback
+filtered_feedback.select("customer_id", "feedback").show()
+
+# COMMAND ----------
+
 

@@ -84,7 +84,7 @@ average_bill_amount.show()
 
 # COMMAND ----------
 
-# DBTITLE 1,Payment Status (Late or on-time)
+# DBTITLE 1,Payment Status (Late/on-time)
 
 
 # COMMAND ----------
@@ -137,45 +137,48 @@ from pyspark.sql.functions import floor, current_date, datediff
 
 # COMMAND ----------
 
-spark = SparkSession.builder.appName("AgeGroups").getOrCreate()
+current_year = current_date().substr(1, 4).cast('integer')
+df_with_age = customer_info_df.withColumn("age", current_year - col("dob").substr(1, 4).cast('integer'))
 
-current_year = 2023  # Assuming the current year is 2023
-customer_info_df = customer_info_df.withColumn("dob", col("dob").cast("date"))
-customer_info_df = customer_info_df.withColumn("year_of_birth", year("dob"))
-customer_info_df = customer_info_df.withColumn("age", current_year - col("year_of_birth"))
+# Show the result
+df_with_age.select('full_name','customer_id', 'age').show()
 
-# Define conditions for age groups
-conditions = [
-    (col("age") >= 16) & (col("age") <= 25),
-    (col("age") >= 26) & (col("age") <= 40),
-    (col("age") >= 41) & (col("age") <= 60),
-    col("age") > 60
-]
-
-# Define labels for age groups
-labels = ["16-25", "26-40", "41-60", "60+"]
-
-# Create a new column 'age_category' based on the conditions
-customer_info_df = customer_info_df.withColumn("age_category", 
-                           expr(
-                               "CASE "
-                               "WHEN {0} THEN '{1}' "
-                               "WHEN {2} THEN '{3}' "
-                               "WHEN {4} THEN '{5}' "
-                               "ELSE '{6}' END"
-                               .format(conditions[0], labels[0], conditions[1], labels[1], conditions[2], labels[2], conditions[3], labels[3])
-                           )
-                         )
-
-# Show the DataFrame with the new 'age_category' column
-customer_info_df.show()
 
 # COMMAND ----------
 
-result_df = customer_info_df.select("customer_id", "full_name", "age_group")
+age_ranges = [
+    (0, 16, '0-16'),
+    (17, 25, '17-25'),
+    (26, 40, '26-40'),
+    (41, 60, '41-60'),
+    (61, float('inf'), '60+')
+]
 
-# Show the result DataFrame
-result_df.show()
+# Define conditions and corresponding age groups using 'when' function
+conditions = [when((start <= df_with_age['age']) & (df_with_age['age'] < end), group) for start, end, group in age_ranges]
+conditions.append(when(df_with_age['age'].isNull(), 'Unknown'))  # Handling possible null values
+
+# Apply the conditions
+df_with_age = df_with_age.withColumn("age_group", \
+               when((col('age')>=16) & (col('age')<26), '16-25')
+              .when((col('age')>=26) & (col('age')<41), '26-40')
+              .when((col('age')>=41) & (col('age')<61), '41-60')
+              .otherwise('60+')
+              )
+
+# df_with_age = df_with_age.withColumn("age_group", when(col('age')))
+
+
+# Show the DataFrame with the new 'age_group' column
+df_with_age.select('full_name','customer_id', 'age_group').show()
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 

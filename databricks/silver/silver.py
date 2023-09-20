@@ -258,3 +258,7 @@ def fraud_clean():
     fraud_df = fraud_df.withColumn("EventProcessedUtcTime",date_format(from_utc_timestamp(col("EventProcessedUtcTime"), "UTC"), "yyyy-MM-dd HH:mm:ss")).withColumn("EventEnqueuedUtcTime",date_format(from_utc_timestamp(col("EventEnqueuedUtcTime"), "UTC"), "yyyy-MM-dd HH:mm:ss"))
     # fraud_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Fraud")
     return fraud_df
+
+# COMMAND ----------
+
+

@@ -99,14 +99,24 @@ def customer_information_raw():
   }
 )
 def customer_rating_raw():
-    """
-    Load customer ratings data from a Delta table.
-
-    Returns:
-        DataFrame: A DataFrame containing customer ratings.
-    """
     customer_rating = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_rating')
     return customer_rating
+"""
+    Reads raw customer rating data from a Delta Lake table.
+
+    This function reads customer rating data from a Delta Lake table located at
+    '/mnt/wetelcodump/bronze/Customer_rating'. The raw customer rating data may include
+    information about customer satisfaction scores, reviews, or feedback.
+
+    Returns:
+        DataFrame: A DataFrame containing raw customer rating information.
+
+    Raises:
+        FileNotFoundError: If the specified Delta Lake table path does not exist.
+
+    Example:
+        >>> rating_data = customer_rating_raw()
+    """
 
 # COMMAND ----------
 
@@ -118,14 +128,24 @@ def customer_rating_raw():
   }
 )
 def device_information_raw():
-    """
-    Load device information data from a Delta table.
-
-    Returns:
-        DataFrame: A DataFrame containing device information.
-    """
     device_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Device_Information')
     return device_information
+"""
+    Reads raw device information data from a Delta Lake table.
+
+    This function reads device information data from a Delta Lake table located at
+    '/mnt/wetelcodump/bronze/Device_Information'. The raw device information data may include details about
+    various types of devices used by customers.
+
+    Returns:
+        DataFrame: A DataFrame containing raw device information.
+
+    Raises:
+        FileNotFoundError: If the specified Delta Lake table path does not exist.
+
+    Example:
+        >>> device_data = device_information_raw()
+    """
 
 # COMMAND ----------
 
@@ -137,15 +157,29 @@ def device_information_raw():
   }
 )
 def plans_raw():
-    """
-    Load plans data from a Delta table and perform column renaming.
-
-    Returns:
-        DataFrame: A DataFrame containing plan information with renamed columns.
-    """
     plans = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Plans')
     plans = plans.withColumnRenamed("Voice Service", "voice_service").withColumnRenamed("Mobile Data", "mobile_data").withColumnRenamed("Spam Detection", "spam_detection").withColumnRenamed("Fraud Prevention","fraud_prevention")
     return plans
+ """
+    Reads raw plan data from a Delta Lake table.
+
+    This function reads plan data from a Delta Lake table located at '/mnt/wetelcodump/bronze/Plans'.
+    The raw plan data may include information about different service offerings including Voice Service,
+    Mobile Data, Spam Detection, and Fraud Prevention.
+
+    Returns:
+        DataFrame: A DataFrame containing raw plan information with columns renamed as follows:
+            - 'Voice Service' -> 'voice_service'
+            - 'Mobile Data' -> 'mobile_data'
+            - 'Spam Detection' -> 'spam_detection'
+            - 'Fraud Prevention' -> 'fraud_prevention'
+
+    Raises:
+        FileNotFoundError: If the specified Delta Lake table path does not exist.
+
+    Example:
+        >>> plans_data = plans_raw()
+    """
 
 # COMMAND ----------
 

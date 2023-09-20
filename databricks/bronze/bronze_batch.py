@@ -21,6 +21,33 @@ def billing_raw():
     billing = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Billing')
     return billing
 
+
+    """
+    Reads raw billing data from a Delta Lake table and returns it as a DataFrame.
+
+    This function loads raw billing data from a Delta Lake table located at
+    '/mnt/wetelcodump/bronze/Billing' using Apache Spark's DataFrame API.
+    
+    Parameters:
+    None
+
+    Returns:
+    pyspark.sql.DataFrame:
+        A DataFrame containing raw billing batch data loaded from the Delta Lake table.
+
+    Example Usage:
+    To access the raw billing data, you can call this function as follows:
+
+    >>> raw_billing_data = billing_raw()
+    >>> raw_billing_data.show()
+    
+    Note:
+    - The function assumes that the Apache Spark session `spark` is already
+      initialized and available in the calling environment.
+    """
+ 
+
+
 # COMMAND ----------
 
 @dlt.create_table(
@@ -34,6 +61,33 @@ def customer_information_raw():
     customer_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_information')
     customer_information = customer_information.withColumnRenamed("system status", "system_status")
     return customer_information
+
+
+    """
+    Reads raw customer information data from a Delta Lake table and returns it as a DataFrame.
+
+    This function loads raw customer information data from a Delta Lake table located at
+    '/mnt/wetelcodump/bronze/Customer_information' using Apache Spark's DataFrame API.
+    It also renames the 'system status' column to 'system_status' for consistency.
+
+    Parameters:
+    None
+
+    Returns:
+    pyspark.sql.DataFrame:
+        A DataFrame containing raw customer information loaded from the Delta Lake table.
+
+    Example Usage:
+    To access the raw customer information data, you can call this function as follows:
+
+    >>> customer_info_data = customer_information_raw()
+    >>> customer_info_data.show()
+    
+    Note:
+    - The function assumes that the Apache Spark session `spark` is already
+      initialized and available in the calling environment.
+    """
+
 
 # COMMAND ----------
 

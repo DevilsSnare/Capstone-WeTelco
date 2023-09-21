@@ -71,15 +71,6 @@ mount_point = "/mnt/wetelcodump"
 
 base_path = f"file:///{my_directory}/dump_unzipped"
 def moveToADLS(folder_path):
-    for item in dbutils.fs.ls(folder_path):
-        if item.isDir():
-            writeAsDelta(item.path)
-        else:
-            file_path = item.path
-            dbutils.fs.cp(file_path, '/mnt/wetelcodump/raw')
-moveToADLS(base_path)
-
-#def moveToADLS(folder_path):
     """
     Recursively moves files and directories from a source location to Azure Data Lake Storage.
 
@@ -105,10 +96,13 @@ moveToADLS(base_path)
     - Files encountered in `folder_path` are copied to the '/mnt/wetelcodump/raw/' directory
       in ADLS.
     """
-   
-
-
-
+    for item in dbutils.fs.ls(folder_path):
+        if item.isDir():
+            writeAsDelta(item.path)
+        else:
+            file_path = item.path
+            dbutils.fs.cp(file_path, '/mnt/wetelcodump/raw')
+moveToADLS(base_path)
 
 # COMMAND ----------
 
@@ -120,19 +114,6 @@ dbutils.fs.rm(f'file:///{my_directory}/dump_unzipped', True)
 base_path = "/mnt/wetelcodump/raw"
 
 def writeAsDelta(folder_path):
-    for item in dbutils.fs.ls(folder_path):
-        if item.isDir():
-            writeAsDelta(item.path)
-        else:
-            file_path = item.path
-            filename = item.name.split('.')[0]
-            extension = item.name.split('.')[1]
-            df = spark.read.format("csv").option("header", "true").option("inferSchema","true").load(file_path)
-            save_path = '/mnt/wetelcodump/bronze/'
-            df.write.format('delta').option("delta.columnMapping.mode", "name").mode("overwrite").save(save_path+filename)
-writeAsDelta(base_path)
-
-#def writeAsDelta(folder_path):
     """
     Recursively converts and saves CSV files in a folder to Delta Lake format.
 
@@ -159,8 +140,18 @@ writeAsDelta(base_path)
       in the '/mnt/wetelcodump/bronze/' directory, overwriting existing files with
       the same names.
     """
+    for item in dbutils.fs.ls(folder_path):
+        if item.isDir():
+            writeAsDelta(item.path)
+        else:
+            file_path = item.path
+            filename = item.name.split('.')[0]
+            extension = item.name.split('.')[1]
+            df = spark.read.format("csv").option("header", "true").option("inferSchema","true").load(file_path)
+            save_path = '/mnt/wetelcodump/bronze/'
+            df.write.format('delta').option("delta.columnMapping.mode", "name").mode("overwrite").save(save_path+filename)
 
-    
+writeAsDelta(base_path)
 
 # COMMAND ----------
 

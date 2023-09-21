@@ -11,7 +11,7 @@ import dlt
 
 # DBTITLE 1,Number of delayed Payments
 def delayed_payment(billing):
-     """
+    """
     Calculate the total delayed payments for each customer based on billing information.
 
     This function takes a DataFrame containing billing information and calculates the total
@@ -80,7 +80,7 @@ def ontime_payment(billing):
 
 # DBTITLE 1,Customer Tier
 def customer_tier(customer_information):
-     """
+    """
     Extract the customer plan information (tier) for each customer.
 
     This function takes a DataFrame containing customer information and extracts the

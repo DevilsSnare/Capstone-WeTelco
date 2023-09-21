@@ -65,9 +65,9 @@ def fraud_facts():
     """
     fraud_facts_df = dlt.read_stream('fraud_clean')
     customers = dlt.read('customer_information_clean')
-    met = metrics(fraud_facts_df)
+    met = metric_func(fraud_facts_df)
     fraud_facts_df = met.join(customers, col('receiver_number')==col('customer_phone'), 'inner').drop('receiver_number')
-    fraud_facts_df = fraud_facts_df.select('customer_phone', 'full_name', 'customer_email', 'connection_type', 'value_segment', 'suspected_reason', 'count_of_suspected_reasons', 'totall_call_duration_seconds','times_user_reported', 'times_user_not_reported')
+    fraud_facts_df = fraud_facts_df.select('customer_phone', 'full_name', 'customer_email', 'connection_type', 'value_segment', 'suspected_reason', 'count_of_suspected_reasons', 'totall_call_duration_seconds','times_user_reported')
     return fraud_facts_df
 
 # COMMAND ----------

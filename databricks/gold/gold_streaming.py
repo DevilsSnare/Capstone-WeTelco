@@ -63,7 +63,7 @@ def fraud_facts():
     Usage:
         fraud_facts_df = fraud_facts()
     """
-    fraud_facts_df = dlt.read_stream('fraud_clean')
+    fraud_facts_df = dlt.read('fraud_clean')
     customers = dlt.read('customer_information_clean')
     met = metric_func(fraud_facts_df)
     fraud_facts_df = met.join(customers, col('receiver_number')==col('customer_phone'), 'inner').drop('receiver_number')

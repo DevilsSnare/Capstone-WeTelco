@@ -71,6 +71,31 @@ mount_point = "/mnt/wetelcodump"
 
 base_path = f"file:///{my_directory}/dump_unzipped"
 def moveToADLS(folder_path):
+    """
+    Recursively moves files and directories from a source location to Azure Data Lake Storage.
+
+    This function recursively iterates through the contents of the specified `folder_path`,
+    and if it encounters a file (not a directory), it copies the file to the '/mnt/wetelcodump/raw'
+    directory in Azure Data Lake Storage (ADLS).
+
+    Parameters:
+    folder_path (str): The source path containing files and directories to move to ADLS.
+
+    Returns:
+    None
+
+    Example Usage:
+    To move the contents of a local directory 'data_folder' to ADLS:
+
+    >>> moveToADLS('/dbfs/mnt/wetelcodump/raw/')
+    
+    Note:
+    - The function assumes that the Databricks utility `dbutils` is available and configured
+      to interact with ADLS.
+    - It recursively processes subdirectories if present in `folder_path`.
+    - Files encountered in `folder_path` are copied to the '/mnt/wetelcodump/raw/' directory
+      in ADLS.
+    """
     for item in dbutils.fs.ls(folder_path):
         if item.isDir():
             writeAsDelta(item.path)
@@ -89,6 +114,32 @@ dbutils.fs.rm(f'file:///{my_directory}/dump_unzipped', True)
 base_path = "/mnt/wetelcodump/raw"
 
 def writeAsDelta(folder_path):
+    """
+    Recursively converts and saves CSV files in a folder to Delta Lake format.
+
+    This function recursively searches for CSV files in the specified `folder_path`,
+    reads them as DataFrames, and saves them as Delta Lake tables in the
+    '/mnt/wetelcodump/bronze/' directory with the same base filename.
+
+    Parameters:
+    folder_path (str): The path to the directory containing CSV files to convert.
+
+    Returns:
+    None
+
+    Example Usage:
+    To convert all CSV files in a directory 'data_folder' to Delta Lake format:
+
+    >>> writeAsDelta('/dbfs/mnt/wetelcodump/bronze/')
+    
+    Note:
+    - The function assumes that the Apache Spark session `spark` is already
+      initialized and available in the calling environment.
+    - The function recursively processes subdirectories if present in `folder_path`.
+    - Each CSV file is converted to a Delta Lake table with the same base filename
+      in the '/mnt/wetelcodump/bronze/' directory, overwriting existing files with
+      the same names.
+    """
     for item in dbutils.fs.ls(folder_path):
         if item.isDir():
             writeAsDelta(item.path)
@@ -99,6 +150,7 @@ def writeAsDelta(folder_path):
             df = spark.read.format("csv").option("header", "true").option("inferSchema","true").load(file_path)
             save_path = '/mnt/wetelcodump/bronze/'
             df.write.format('delta').option("delta.columnMapping.mode", "name").mode("overwrite").save(save_path+filename)
+
 writeAsDelta(base_path)
 
 # COMMAND ----------

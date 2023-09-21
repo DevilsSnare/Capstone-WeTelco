@@ -22,13 +22,6 @@ import dlt
 )
 @dlt.expect_or_drop("valid customer_id", "customer_id IS NOT NULL")
 def customer_information_clean():
-    customer_information_df = dlt.read('customer_information_raw')
-    customer_information_df = customer_information_df.select([col(column).alias(column.lower()) for column in customer_information_df.columns])
-    customer_information_df = customer_information_df.withColumn("customer_phone", when(length(col("customer_phone").cast("string"))<10, None).otherwise(col("customer_phone")))     
-    customer_information_df = customer_information_df.dropDuplicates()
-    customer_information_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Customer_information")
-    return customer_information_df
-
     """
     This Python script defines a Delta Live table and a data cleaning function to process customer information data.
 
@@ -48,6 +41,12 @@ def customer_information_clean():
     Function Return:
     - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
     """
+    customer_information_df = dlt.read('customer_information_raw')
+    customer_information_df = customer_information_df.select([col(column).alias(column.lower()) for column in customer_information_df.columns])
+    customer_information_df = customer_information_df.withColumn("customer_phone", when(length(col("customer_phone").cast("string"))<10, None).otherwise(col("customer_phone")))     
+    customer_information_df = customer_information_df.dropDuplicates()
+    customer_information_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Customer_information")
+    return customer_information_df
 
 # COMMAND ----------
 
@@ -68,16 +67,6 @@ def calculate_mean_udf(bill_amount_col, customer_id_col):
   }
 )
 def billing_clean():
-    billing_df = dlt.read('billing_raw')
-    billing_df = billing_df.select([col(column).alias(column.lower()) for column in billing_df.columns])
-    billing_df = billing_df.withColumn("bill_amount", when(col("bill_amount") == '?', None).otherwise(col("bill_amount").cast("double")))
-    billing_df = billing_df.withColumn("mean_bill_amount", calculate_mean_udf("bill_amount", "customer_id"))
-    billing_df = billing_df.withColumn("bill_amount", when(col("bill_amount").isNull(), col("mean_bill_amount")).otherwise(col("bill_amount")))
-    billing_df = billing_df.drop("mean_bill_amount")
-    billing_df = billing_df.dropDuplicates()
-    billing_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Billing")
-    return billing_df
-
     """
     This Python script defines a Delta Live table and a data cleaning function to process billing information data.
 
@@ -100,6 +89,15 @@ def billing_clean():
     Function Return:
     - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
     """
+    billing_df = dlt.read('billing_raw')
+    billing_df = billing_df.select([col(column).alias(column.lower()) for column in billing_df.columns])
+    billing_df = billing_df.withColumn("bill_amount", when(col("bill_amount") == '?', None).otherwise(col("bill_amount").cast("double")))
+    billing_df = billing_df.withColumn("mean_bill_amount", calculate_mean_udf("bill_amount", "customer_id"))
+    billing_df = billing_df.withColumn("bill_amount", when(col("bill_amount").isNull(), col("mean_bill_amount")).otherwise(col("bill_amount")))
+    billing_df = billing_df.drop("mean_bill_amount")
+    billing_df = billing_df.dropDuplicates()
+    billing_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Billing")
+    return billing_df
 
 # COMMAND ----------
 
@@ -116,12 +114,6 @@ def billing_clean():
   }
 )
 def plans_clean():
-    plans_df = dlt.read('plans_raw')
-    plans_df = plans_df.select([col(column).alias(column.lower()) for column in plans_df.columns])
-    plans_df = plans_df.dropDuplicates()
-    plans_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Plans")
-    return plans_df
-
     """
     This Python script defines a Delta Live table and a data cleaning function to process plans data.
 
@@ -137,6 +129,11 @@ def plans_clean():
     Function Return:
     - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
     """
+    plans_df = dlt.read('plans_raw')
+    plans_df = plans_df.select([col(column).alias(column.lower()) for column in plans_df.columns])
+    plans_df = plans_df.dropDuplicates()
+    plans_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Plans")
+    return plans_df
 
 # COMMAND ----------
 
@@ -155,12 +152,6 @@ def plans_clean():
 )
 @dlt.expect_or_drop("valid customer_id", "customer_id IS NOT NULL")
 def customer_rating_clean():
-    customer_rating_df = dlt.read('customer_rating_raw')
-    customer_rating_df = customer_rating_df.select([col(column).alias(column.lower()) for column in customer_rating_df.columns])
-    customer_rating_df = customer_rating_df.dropDuplicates()
-    customer_rating_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Customer_rating")
-    return customer_rating_df
-    
     """
     This Python script defines a Delta Live table and a data cleaning function to process customer rating data.
 
@@ -184,6 +175,11 @@ def customer_rating_clean():
     Function Return:
     - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
     """
+    customer_rating_df = dlt.read('customer_rating_raw')
+    customer_rating_df = customer_rating_df.select([col(column).alias(column.lower()) for column in customer_rating_df.columns])
+    customer_rating_df = customer_rating_df.dropDuplicates()
+    customer_rating_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Customer_rating")
+    return customer_rating_df
 
 # COMMAND ----------
 
@@ -201,18 +197,7 @@ table_properties={
 }
 )
 @dlt.expect_or_drop("valid customer_id", "customer_id IS NOT NULL")
-def device_information_clean(): 
-    device_information_df = dlt.read('device_information_raw')
-    device_information_df = device_information_df.select([col(column).alias(column.lower()) for column in device_information_df.columns])
-    device_information_df = device_information_df.dropDuplicates()
-    device_information_df = device_information_df.dropna(thresh=3)
-    condition_1 = (col("os_vendor") == "NOKIA") & (col("os_name").isNull())
-    device_information_df = device_information_df.withColumn("os_name", when(condition_1, 'Series 30+').otherwise(col("os_name")))
-    condition_2 = (col("os_vendor") == "Mentor Graphics") & (col("os_name").isNull())
-    device_information_df = device_information_df.withColumn("os_name", when(condition_2, 'Android').otherwise(col("os_name")))
-    device_information_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Device_information")
-    return device_information_df
-
+def device_information_clean():
     """
     This Python script defines a Delta Live table and a data cleaning function to process device information data.
 
@@ -233,6 +218,53 @@ def device_information_clean():
     Function Return:
     - The function returns the cleaned DataFrame, but this return value is typically used for further processing and not for direct table manipulation.
     """
+    device_information_df = dlt.read('device_information_raw')
+    device_information_df = device_information_df.select([col(column).alias(column.lower()) for column in device_information_df.columns])
+    device_information_df = device_information_df.dropDuplicates()
+    device_information_df = device_information_df.dropna(thresh=3)
+    condition_1 = (col("os_vendor") == "NOKIA") & (col("os_name").isNull())
+    device_information_df = device_information_df.withColumn("os_name", when(condition_1, 'Series 30+').otherwise(col("os_name")))
+    condition_2 = (col("os_vendor") == "Mentor Graphics") & (col("os_name").isNull())
+    device_information_df = device_information_df.withColumn("os_name", when(condition_2, 'Android').otherwise(col("os_name")))
+    device_information_df.write.format('delta').mode("overwrite").save("/mnt/wetelcodump/silver/Device_information")
+    return device_information_df
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #####fraud cleaning (stream data)
+
+# COMMAND ----------
+
+@dlt.create_table(
+comment="The cleaned fraud ingested from delta.",
+table_properties={
+    "wetelco.quality": "silver",
+    "pipelines.autoOptimize.managed": "true"
+}
+)
+@dlt.expect_or_drop("valid call_id", "call_id IS NOT NULL")
+def fraud_clean():
+    """
+    Cleans and transforms raw fraud data and creates a Delta table with cleaned data.
+
+    This function reads raw fraud data from a streaming source, applies transformations
+    to the data, and enforces data quality expectations before creating a Delta table
+    with the cleaned data.
+
+    Returns:
+        DataFrame: A DataFrame containing cleaned fraud data.
+
+    Raises:
+        Any exceptions raised during data processing.
+
+    Usage:
+        fraud_clean_df = fraud_clean()
+    """
+    fraud_df = dlt.read_stream('fraud_raw')
+    fraud_df = fraud_df.select([col(column).alias(column.lower()) for column in fraud_df.columns])
+    fraud_df = fraud_df.withColumn("start_time", to_timestamp("start_time", "yyyy-MM-dd HH:mm:ss")).withColumn("end_time", to_timestamp("end_time", "yyyy-MM-dd HH:mm:ss")).withColumn("event_timestamp", to_timestamp("event_timestamp", "yyyy-MM-dd HH:mm:ss"))
+    return fraud_df
 
 # COMMAND ----------
 

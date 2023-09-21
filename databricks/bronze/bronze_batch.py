@@ -18,10 +18,6 @@ import dlt
   }
 )
 def billing_raw():
-    billing = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Billing')
-    return billing
-
-
     """
     Reads raw billing data from a Delta Lake table and returns it as a DataFrame.
 
@@ -45,8 +41,8 @@ def billing_raw():
     - The function assumes that the Apache Spark session `spark` is already
       initialized and available in the calling environment.
     """
- 
-
+    billing = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Billing')
+    return billing 
 
 # COMMAND ----------
 
@@ -58,11 +54,6 @@ def billing_raw():
   }
 )
 def customer_information_raw():
-    customer_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_information')
-    customer_information = customer_information.withColumnRenamed("system status", "system_status")
-    return customer_information
-
-
     """
     Reads raw customer information data from a Delta Lake table and returns it as a DataFrame.
 
@@ -87,7 +78,9 @@ def customer_information_raw():
     - The function assumes that the Apache Spark session `spark` is already
       initialized and available in the calling environment.
     """
-
+    customer_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_information')
+    customer_information = customer_information.withColumnRenamed("system status", "system_status")
+    return customer_information
 
 # COMMAND ----------
 
@@ -99,9 +92,7 @@ def customer_information_raw():
   }
 )
 def customer_rating_raw():
-    customer_rating = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_rating')
-    return customer_rating
-"""
+    """
     Reads raw customer rating data from a Delta Lake table.
 
     This function reads customer rating data from a Delta Lake table located at
@@ -117,6 +108,8 @@ def customer_rating_raw():
     Example:
         >>> rating_data = customer_rating_raw()
     """
+    customer_rating = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Customer_rating')
+    return customer_rating
 
 # COMMAND ----------
 
@@ -128,9 +121,7 @@ def customer_rating_raw():
   }
 )
 def device_information_raw():
-    device_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Device_Information')
-    return device_information
-"""
+    """
     Reads raw device information data from a Delta Lake table.
 
     This function reads device information data from a Delta Lake table located at
@@ -146,6 +137,8 @@ def device_information_raw():
     Example:
         >>> device_data = device_information_raw()
     """
+    device_information = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Device_Information')
+    return device_information
 
 # COMMAND ----------
 
@@ -157,10 +150,7 @@ def device_information_raw():
   }
 )
 def plans_raw():
-    plans = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Plans')
-    plans = plans.withColumnRenamed("Voice Service", "voice_service").withColumnRenamed("Mobile Data", "mobile_data").withColumnRenamed("Spam Detection", "spam_detection").withColumnRenamed("Fraud Prevention","fraud_prevention")
-    return plans
- """
+    """
     Reads raw plan data from a Delta Lake table.
 
     This function reads plan data from a Delta Lake table located at '/mnt/wetelcodump/bronze/Plans'.
@@ -180,6 +170,9 @@ def plans_raw():
     Example:
         >>> plans_data = plans_raw()
     """
+    plans = spark.read.format("delta").load('/mnt/wetelcodump/bronze/Plans')
+    plans = plans.withColumnRenamed("Voice Service", "voice_service").withColumnRenamed("Mobile Data", "mobile_data").withColumnRenamed("Spam Detection", "spam_detection").withColumnRenamed("Fraud Prevention","fraud_prevention")
+    return plans
 
 # COMMAND ----------
 

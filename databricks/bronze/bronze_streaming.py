@@ -1,4 +1,8 @@
 # Databricks notebook source
+from pyspark.sql.functions import *
+
+# COMMAND ----------
+
 import dlt
 @dlt.create_table(
   comment="The raw stream data.",

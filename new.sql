@@ -1242,6 +1242,8 @@ on a.STORE_NBR = b.store_id
 on cast(A.ORDER_PCKUP_PNT_ID as numeric)= B.int_store_nbr);
 
 
+
+
 -- Getting the new stores and DAAS stores in a different table
 CREATE OR REPLACE TABLE LMD_DA.JIE_STORE_CARRIER1_DAAS AS 
 (SELECT 
@@ -2475,7 +2477,7 @@ with prop as													-- Drvr_user_ID + Actual Payment Week + Payment
 				END) AS INCENTIVE_AMT ,
 				
 		SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%shop%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0  END) 
-		AS SHOPPER_INCENTIVE, 	
+		AS SHOPPER_INCENTIVE ,	
 	
 		SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%'  and (lower(E.PROMO_NM) like '%starting to%' or  lower(E.PROMO_NM) like '%reactivation%')
 		THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS ACQ_INCENTIVE ,
@@ -2484,15 +2486,13 @@ with prop as													-- Drvr_user_ID + Actual Payment Week + Payment
 		THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0  END) AS RFR_INCENTIVE ,
 				
 		SUM(distinct CASE  WHEN PYMT_TRANS_TYPE_CD = 'EARNINGS_ADJUSTMENT_PAYMENT' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS ERNGS_ADJ_AMT,
-		
 		-- NEWLY ADDED INCENTIVE FEATURES
-		
 		SUM(distinct CASE WHEN (PYMT_TRANS_TYPE_CD = 'MISSING_ORDER_PAYMENT' ) THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS MISSING_ORDR_AMT,
 		SUM(distinct CASE WHEN PYMT_TRANS_TYPE_CD = 'GUARNTEED_PAYMENT' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS GUAR_PYMNT_AMT,
-		SUM(distinct CASE WHEN PYMT_TRANS_TYPE_CD = 'HEALTHCARE_SUBSIDY_PAYMENT' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS HLTH_CARE_AMT,
-		SUM(distinct CASE WHEN PYMT_TRANS_TYPE_CD = 'BONUS_PAYMENT' AND (E.PROMO_NM IS NULL ) THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS MNUAL_BLK_BNS_PYMT, -- updating by removing the new trip table LAST_MI_DLVR_INCTV_PYMT condition
+		SUM(distinct CASE WHEN PYMT_TRANS_TYPE_CD = 'HEALTHCARE_SUBSIDY_PAYMENT' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS HLTH_CARE_AMT
+		,SUM(distinct CASE WHEN PYMT_TRANS_TYPE_CD = 'BONUS_PAYMENT' AND (E.PROMO_NM IS NULL ) THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS MNUAL_BLK_BNS_PYMT, -- updating by removing the new trip table LAST_MI_DLVR_INCTV_PYMT condition
 		
-	    ----------additional INCENTIVES----------------(TICKET -1121)-------------------------------------------------------
+	--------------additional INCENTIVES----------------(TICKET -1121)-------------------------------------------------------
 	
 	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%launch%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0  END) AS Launch_INCENTIVE ,
 				
@@ -2501,23 +2501,22 @@ with prop as													-- Drvr_user_ID + Actual Payment Week + Payment
 	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%miss you%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0  END) AS  REACTIVATION_INCENTIVE,
 
 	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%weekend%' AND EXTRACT(DAYOFWEEK FROM PROMO_ACTV_START_DT)=7
-	
 	--AND	EXTRACT(DAYOFWEEK FROM PROMO_ACTV_END_DT)=7
-	
 	THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS  SUNDAY_CHURN_INCENTIVE,	
 				
-	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%dotcom%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0  END) AS DOTCOM_INCENTIVE,		
+	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%dotcom%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0  END) AS DOTCOM_INCENTIVE ,		
+
 			
-	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%special%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0  END) AS  SPECIAL_INCENTIVE,
+	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%special%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0  END) AS  SPECIAL_INCENTIVE ,
 							
 	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%morning%' and lower(E.PROMO_NM) like '%store%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0  END)
-	AS  MORNING_STORE_INCENTIVE,
+	AS  MORNING_STORE_INCENTIVE ,
 							
 	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%evening%' and lower(E.PROMO_NM) like '%store%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END)
-	AS  EVENING_STORE_INCENTIVE,
+	AS  EVENING_STORE_INCENTIVE ,
 							
 	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%exciting%' and lower(E.PROMO_NM) like '%store%' THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END)
-	AS  STORE_INCENTIVE,
+	AS  STORE_INCENTIVE ,
 								
 	SUM(distinct CASE WHEN lower(E.PROMO_TYPE_NM) like '%incentive%' and lower(E.PROMO_NM) like '%morning%'  THEN A.DLVR_FEE_WM_REWARD_AMT ELSE 0 END) AS  MORNING_ZONE_INCENTIVE ,
 				
@@ -3236,7 +3235,7 @@ GROUP BY 1,2,3,4,5,6,7
 -- UNCOMMENT THE FOLLOWING CREATE STATEMENT WHEN RUNNING A FULL_REFRESH
 
  
-  -- CREATE OR REPLACE TABLE LMD_DA.CUSTOMER_NPS2_SS
+--   CREATE OR REPLACE TABLE LMD_DA.CUSTOMER_NPS2_SS
 -- AS( SELECT A.*, B.WM_MTH_ID AS WALMART_MONTH, B.CAL_MTH_ID AS MONTH_NUM FROM
 -- (
 -- SELECT STORE_ID,WM_WK
@@ -4180,7 +4179,7 @@ SELECT
     )) AS LASTMILE_END_TS_UTC,
     MAX(SRC_CRE_TS_UTC) AS ASSOC_DLVR_CPLT_TS_UTC,
 
-    MAX( if(picker_type_nm="SHOPPER",(least(
+    MAX( if(picker_type_nm="SHOPPER",(greatest(
     IFNULL(CAR_REQ_TS_UTC,"1900-12-31"),
 		    IFNULL(if(DLVR_TS_UTC is not null and AT_PICKUP_TS_UTC <= DLVR_TS_UTC ,AT_PICKUP_TS_UTC,"1900-12-31"),"1900-12-31"),
 				--changes made by VN551CS || sid || 10th april 2024
@@ -4191,7 +4190,7 @@ SELECT
     )),(GREATEST(
     IFNULL(CAR_REQ_TS_UTC,"1900-12-31"),
     IFNULL(if(DLVR_TS_UTC is not null and DISPATCHED_TS_UTC <= DLVR_TS_UTC ,DISPATCHED_TS_UTC,"1900-12-31"),"1900-12-31"),
-    IFNULL(if(DLVR_TS_UTC is not null and LOADED_TS_UTC <= DLVR_TS_UTC ,LOADED_TS_UTC,"1900-12-31"),"1900-12-31"),
+    -- IFNULL(if(DLVR_TS_UTC is not null and LOADED_TS_UTC <= DLVR_TS_UTC ,LOADED_TS_UTC,"1900-12-31"),"1900-12-31"),
     IFNULL(if(DLVR_TS_UTC is not null and PKG_RCPT_DRVR_TS_UTC <= DLVR_TS_UTC ,PKG_RCPT_DRVR_TS_UTC,"1900-12-31"),"1900-12-31"),
     IFNULL(if(DLVR_TS_UTC is not null and AT_PICKUP_TS_UTC <= DLVR_TS_UTC ,AT_PICKUP_TS_UTC,"1900-12-31"),"1900-12-31")
     )))) AS P2_END_TS_UTC 
@@ -4354,14 +4353,15 @@ wxt.EXCPT_RSN_DESC as WM_Cancel_reason_desc_trip,   -- for non-shopper Walmart c
 sx.EXCPT_RSN_DESC as SHPR_Cancel_reason_desc,   -- for Shopper cancellations, at PO-level 
 sxt.EXCPT_RSN_DESC as SHPR_Cancel_reason_desc_trip, 	-- for Shopper cancellations, at Trip-level 
 round(safe_divide( b.Total_time_spent,c.rows_total ),3) as Total_time_spent_rows, 
-round(safe_divide(b.min_time,c.rows_total),3) as min_time_rows,
+ round(safe_divide(b.min_time,c.rows_total),3) as min_time_rows,
 datetime_diff(E.END_ts,E.start_ts, MINUTE ) as LAST_MILE_TIME,
 spk.Total_time_spent as Total_time_spent_spark_now, 
 round(safe_divide( spk.Total_time_spent,c.rows_total ),3) as Total_time_spent_spark_now_rows,
-round(safe_divide(dusn.TOT_DURATION_WORK,c.rows_total),3) as TOT_DURATION_WORK_hy, -- driver eng time as per hya
-round(safe_divide( dusn.TOT_DURATION_SPARK_NOW,c.rows_total ),3) as TOT_DURATION_SPARK_NOW_hy, --eligible sessions as per to hya
-round(safe_divide( dusn.P2_Time,c.rows_total ),3) as P2_Time_hy
-from 
+ round(safe_divide(dusn.TOT_DURATION_WORK,c.rows_total),3) as TOT_DURATION_WORK_hy, -- driver eng time as per hya
+ round(safe_divide( dusn.TOT_DURATION_SPARK_NOW,c.rows_total ),3) as TOT_DURATION_SPARK_NOW_hy, --eligible sessions as per to hya
+ round(safe_divide( dusn.P2_Time,c.rows_total ),3) as P2_Time_hy
+
+ from 
 LMD_DA.SPARK_DELIVERY_DS_1 a 
 left join 
 LMD_DA.s1s2s3s4s56 b 
@@ -4372,7 +4372,7 @@ LMD_DA.s1s2s3s4s56_spark_now spk
 on a.drvr_user_id=spk.drvr_user_id
 and a.slot_dt=spk.slot_dt
 left join 
-`LMD_DA.driver_rows`  c 
+ `LMD_DA.driver_rows`  c 
 on a.drvr_user_id=c.drvr_user_id
 and a.slot_dt=c.slot_dt 
 left join LMD_DA.s1s2s3s4 d
@@ -6374,10 +6374,10 @@ ON A.DEFECT_DT=B.CAL_DT
 --	 THE FOLLOwING QUERY WHEN RUNNING A FULL_REFRESH
 
 --Adding Rapid express delivery-time flags column 
-   -- CREATE OR REPLACE TABLE LMD_DA.SPARK_DELIVERY_DS_ALL_FINAL AS 
+--    CREATE OR REPLACE TABLE LMD_DA.SPARK_DELIVERY_DS_ALL_FINAL AS 
 -- (SELECT DISTINCT A.* EXCEPT(APARTMENT_PYMT_AMT,fin_circuit_id), B.WM_WK AS DEFECT_WK, B.WM_WK_ID AS DEFECT_WK_ID, 
-				-- CAST(APARTMENT_PYMT_AMT AS FLOAT64) APARTMENT_PYMT_AMT , current_timestamp() as Tred_Loaded_ts
-	-- FROM
+-- 				CAST(APARTMENT_PYMT_AMT AS FLOAT64) APARTMENT_PYMT_AMT , current_timestamp() as Tred_Loaded_ts
+-- 	FROM
 -- (
 -- SELECT * EXCEPT(DELIVERY_TIME, SLOT_WINDOW, OLD_CANCEL_SUB_CATEGORY,OLD_CANCEL_CATEGORY,PO_RN),
 -- CASE 
@@ -6388,23 +6388,23 @@ ON A.DEFECT_DT=B.CAL_DT
 -- ELSE SLOT_DT
 -- END AS DEFECT_DT ,
 -- CASE WHEN COMPLETED_TRIP_IND = 1 THEN 
-  -- CASE
-	-- WHEN (DELIVERY_TIME - SLOT_WINDOW) <0 
-	-- THEN 
-		-- CASE 
-			-- WHEN (DELIVERY_TIME - SLOT_WINDOW) BETWEEN -10 AND 0 THEN 'T-10'
-			-- WHEN (DELIVERY_TIME - SLOT_WINDOW) BETWEEN -20 AND -11 THEN 'T-20'
-			-- ELSE 'T-START'
-		-- END  
-	-- WHEN (DELIVERY_TIME - SLOT_WINDOW) >0
-	-- THEN 
-		-- CASE
-			-- WHEN (DELIVERY_TIME - SLOT_WINDOW) BETWEEN 0 AND 10 THEN 'T+10'
-			-- WHEN (DELIVERY_TIME - SLOT_WINDOW) BETWEEN 11 AND 20 THEN 'T+20'
-			-- WHEN (DELIVERY_TIME - SLOT_WINDOW) > 21 THEN 'LATE'
-		-- END 
-	-- ELSE 'T-0'
-  -- END 
+--   CASE
+-- 	WHEN (DELIVERY_TIME - SLOT_WINDOW) <0 
+-- 	THEN 
+-- 		CASE 
+-- 			WHEN (DELIVERY_TIME - SLOT_WINDOW) BETWEEN -10 AND 0 THEN 'T-10'
+-- 			WHEN (DELIVERY_TIME - SLOT_WINDOW) BETWEEN -20 AND -11 THEN 'T-20'
+-- 			ELSE 'T-START'
+-- 		END  
+-- 	WHEN (DELIVERY_TIME - SLOT_WINDOW) >0
+-- 	THEN 
+-- 		CASE
+-- 			WHEN (DELIVERY_TIME - SLOT_WINDOW) BETWEEN 0 AND 10 THEN 'T+10'
+-- 			WHEN (DELIVERY_TIME - SLOT_WINDOW) BETWEEN 11 AND 20 THEN 'T+20'
+-- 			WHEN (DELIVERY_TIME - SLOT_WINDOW) > 21 THEN 'LATE'
+-- 		END 
+-- 	ELSE 'T-0'
+--   END 
 -- ELSE NULL 
 -- END AS RAPID_DEL_FLAG
 -- FROM (
@@ -6412,60 +6412,60 @@ ON A.DEFECT_DT=B.CAL_DT
 -- DATETIME_DIFF(COALESCE(SLOT_TO_TS,DLVR_SLOT_END_TS_TZ),COALESCE(Slot_From_TS,DLVR_SLOT_START_TS_TZ),MINUTE) AS SLOT_WINDOW,
 -- DATETIME_DIFF(CARRIER_DLVR_TS_TZ,COALESCE(Slot_From_TS,DLVR_SLOT_START_TS_TZ),MINUTE) AS DELIVERY_TIME,
 -- CASE 
-	-- WHEN REC_SRC = 'DISPATCHER' AND STS_DESC = 'Shipped' AND CARRIER_DLVR_TS_TZ IS NOT NULL THEN 1
-	-- WHEN REC_SRC = 'DAAS' AND CARRIER_DLVR_TS_TZ IS NOT NULL THEN 1
-	-- ELSE 0
-	-- END AS COMPLETED_TRIP_IND	
+-- 	WHEN REC_SRC = 'DISPATCHER' AND STS_DESC = 'Shipped' AND CARRIER_DLVR_TS_TZ IS NOT NULL THEN 1
+-- 	WHEN REC_SRC = 'DAAS' AND CARRIER_DLVR_TS_TZ IS NOT NULL THEN 1
+-- 	ELSE 0
+-- 	END AS COMPLETED_TRIP_IND	
 -- FROM(
 
 -- --Adding Defect rate flags column 
-	-- SELECT * except(po_num), 
-	-- --CASE WHEN UPPER(REC_SRC) = 'DAAS' THEN '0' ELSE po_num END AS po_num,  - (ticket 989)
-	 -- cast(po_num as string) as po_num,
-	-- CASE
-	 -- WHEN (UPPER(CARRIER_ORG_NM) <>'SPARK' AND CARRIER_DLVR_TS_TZ IS NOT NULL AND UPPER(On_Time_Delivery_DT_Defect)='Y') THEN 'D1' 
-	 -- WHEN(UPPER(CARRIER_ORG_NM) <>'SPARK' AND CARRIER_DLVR_TS_TZ IS NOT NULL AND UPPER(On_Time_Delivery_DT_Defect)='N' AND 
-	 -- (
-	-- (FMT_TYPE =7 AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE) < 50) OR
-	 -- (FMT_TYPE = 9 AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE) <40) OR
-	 -- ( 
-		 -- (FMT_TYPE IS NULL OR (FMT_TYPE<>7 AND FMT_TYPE<>9)) AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE) <-1400
-	 -- )
-	 -- )
-	 -- )
-	  -- THEN  'D1'
-	  -- WHEN 
-	-- UPPER(CARRIER_ORG_NM) = 'SPARK' AND On_Time_Delivery_DT_Defect='N' AND OTP_FLAG =1 AND CARRIER_DLVR_TS_TZ IS NOT NULL  
-	 -- THEN
-	  -- CASE 
-	  -- -- D2 modified on 18th July, ticket 996
-	   -- WHEN (FMT_TYPE=9 AND PICKER_TYPE_NM ='ASSOCIATE' AND (DWELL_TIME<17 OR DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>108)) THEN 'D2'
-	   -- WHEN (FMT_TYPE=7 AND PICKER_TYPE_NM ='ASSOCIATE' AND (DWELL_TIME<25 OR DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>250)) THEN 'D2'
-	   -- WHEN (FMT_TYPE=9 AND PICKER_TYPE_NM ='SHOPPER' AND (DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>108)) THEN 'D2'
-	   -- WHEN (FMT_TYPE=7 AND PICKER_TYPE_NM ='SHOPPER' AND (DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>250)) THEN 'D2'
+-- 	SELECT * except(po_num), 
+-- 	--CASE WHEN UPPER(REC_SRC) = 'DAAS' THEN '0' ELSE po_num END AS po_num,  - (ticket 989)
+-- 	 cast(po_num as string) as po_num,
+-- 	CASE
+-- 	 WHEN (UPPER(CARRIER_ORG_NM) <>'SPARK' AND CARRIER_DLVR_TS_TZ IS NOT NULL AND UPPER(On_Time_Delivery_DT_Defect)='Y') THEN 'D1' 
+-- 	 WHEN(UPPER(CARRIER_ORG_NM) <>'SPARK' AND CARRIER_DLVR_TS_TZ IS NOT NULL AND UPPER(On_Time_Delivery_DT_Defect)='N' AND 
+-- 	 (
+-- 	(FMT_TYPE =7 AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE) < 50) OR
+-- 	 (FMT_TYPE = 9 AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE) <40) OR
+-- 	 ( 
+-- 		 (FMT_TYPE IS NULL OR (FMT_TYPE<>7 AND FMT_TYPE<>9)) AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE) <-1400
+-- 	 )
+-- 	 )
+-- 	 )
+-- 	  THEN  'D1'
+-- 	  WHEN 
+-- 	UPPER(CARRIER_ORG_NM) = 'SPARK' AND On_Time_Delivery_DT_Defect='N' AND OTP_FLAG =1 AND CARRIER_DLVR_TS_TZ IS NOT NULL  
+-- 	 THEN
+-- 	  CASE 
+-- 	  -- D2 modified on 18th July, ticket 996
+-- 	   WHEN (FMT_TYPE=9 AND PICKER_TYPE_NM ='ASSOCIATE' AND (DWELL_TIME<17 OR DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>108)) THEN 'D2'
+-- 	   WHEN (FMT_TYPE=7 AND PICKER_TYPE_NM ='ASSOCIATE' AND (DWELL_TIME<25 OR DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>250)) THEN 'D2'
+-- 	   WHEN (FMT_TYPE=9 AND PICKER_TYPE_NM ='SHOPPER' AND (DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>108)) THEN 'D2'
+-- 	   WHEN (FMT_TYPE=7 AND PICKER_TYPE_NM ='SHOPPER' AND (DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>250)) THEN 'D2'
 	   
-	   -- WHEN ((FMT_TYPE IS NULL OR (FMT_TYPE <>7 AND FMT_TYPE<>9)) AND (DWELL_TIME<28 OR DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE) >-1000 )) THEN 'D2'
-	   -- END
-	 -- WHEN 
-	   -- UPPER(CARRIER_ORG_NM) <>'SPARK' AND CARRIER_DLVR_TS_TZ IS NOT NULL AND On_Time_Delivery_DT_Defect='N' 
-	 -- AND( (FMT_TYPE=7  AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>50) OR 
-		 -- (FMT_TYPE=9  AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>40) OR
-		 -- (((FMT_TYPE IS NULL) OR (FMT_TYPE<>7 AND FMT_TYPE<>9))AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>-1400  )
-		 -- ) THEN 'D3'
-	-- -- WHEN  (WM_TOT_CANCEL_REASON_DESC = 'Cold chain compliance violated' OR
-	-- -- 	  WM_TOT_CANCEL_REASON_DESC ='Cold chain compliance violation' OR
-	-- -- 	   WM_TOT_CANCEL_REASON_DESC ='Accepted by mistake' OR
-	-- -- 	   WM_TOT_CANCEL_REASON_DESC = 'I have an emergency'  OR
-	-- -- 	   WM_TOT_CANCEL_REASON_DESC = 'Driver: Refused Order')
-	-- -- 	   THEN 'D4'
-    -- WHEN b.PO_EXCPT_RSN_CATG_NM = 'Driver' THEN 'D4'
-	-- --  WHEN NO_DRV_CANC=1  THEN 'D5'
-    -- WHEN b.PO_EXCPT_RSN_CATG_NM = 'No Driver' THEN 'D5'
-	  -- ELSE NULL END AS DEFECT_RATE_FLAG
-	  -- FROM LMD_DA.SPARK_DELIVERY_DS_ALL_FINAL11 a--vn53vov
-    -- LEFT JOIN `LMD_DA.CNCL_CAT_NM` b
-    -- on a.WM_TOT_Cancel_reason_desc = b.PO_EXCPT_RSN_NM
-  -- ))) A
+-- 	   WHEN ((FMT_TYPE IS NULL OR (FMT_TYPE <>7 AND FMT_TYPE<>9)) AND (DWELL_TIME<28 OR DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE) >-1000 )) THEN 'D2'
+-- 	   END
+-- 	 WHEN 
+-- 	   UPPER(CARRIER_ORG_NM) <>'SPARK' AND CARRIER_DLVR_TS_TZ IS NOT NULL AND On_Time_Delivery_DT_Defect='N' 
+-- 	 AND( (FMT_TYPE=7  AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>50) OR 
+-- 		 (FMT_TYPE=9  AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>40) OR
+-- 		 (((FMT_TYPE IS NULL) OR (FMT_TYPE<>7 AND FMT_TYPE<>9))AND DATETIME_DIFF(SLOT_TO_TS,COALESCE(TRIP_CREATED_TS_TZ,CAR_REQ_TS_TZ),MINUTE)>-1400  )
+-- 		 ) THEN 'D3'
+-- 	-- WHEN  (WM_TOT_CANCEL_REASON_DESC = 'Cold chain compliance violated' OR
+-- 	-- 	  WM_TOT_CANCEL_REASON_DESC ='Cold chain compliance violation' OR
+-- 	-- 	   WM_TOT_CANCEL_REASON_DESC ='Accepted by mistake' OR
+-- 	-- 	   WM_TOT_CANCEL_REASON_DESC = 'I have an emergency'  OR
+-- 	-- 	   WM_TOT_CANCEL_REASON_DESC = 'Driver: Refused Order')
+-- 	-- 	   THEN 'D4'
+--     WHEN b.PO_EXCPT_RSN_CATG_NM = 'Driver' THEN 'D4'
+-- 	--  WHEN NO_DRV_CANC=1  THEN 'D5'
+--     WHEN b.PO_EXCPT_RSN_CATG_NM = 'No Driver' THEN 'D5'
+-- 	  ELSE NULL END AS DEFECT_RATE_FLAG
+-- 	  FROM LMD_DA.SPARK_DELIVERY_DS_ALL_FINAL11 a--vn53vov
+--     LEFT JOIN `LMD_DA.CNCL_CAT_NM` b
+--     on a.WM_TOT_Cancel_reason_desc = b.PO_EXCPT_RSN_NM
+--   ))) A
 -- LEFT JOIN LMD_DA.WMT_WEEK B
 -- ON A.DEFECT_DT=B.CAL_DT
 -- );
